@@ -1,0 +1,215 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(5, 8, 20, 0.85);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: #0d1120;
+  padding: 30px;
+  border-radius: 12px;
+  width: 500px;
+  color: white;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  color: #aaa;
+  margin-bottom: 10px;
+}
+
+.icon-grid {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.icon-box {
+  width: 50px;
+  height: 50px;
+  background: #121828;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 22px;
+}
+
+.icon-box.active {
+  border: 2px solid #00e5ff;
+}
+
+.quest-input {
+  width: 100%;
+  padding: 10px;
+  background: #121828;
+  border: none;
+  color: white;
+  margin-bottom: 15px;
+}
+
+.next-btn {
+  width: 100%;
+  padding: 12px;
+  background: #00e5ff;
+  border: none;
+  cursor: pointer;
+}
+/* STEP INDICATOR */
+.steps {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0 20px;
+}
+
+.step {
+  height: 6px;
+  flex: 1;
+  background: #1a2035;
+  border-radius: 10px;
+}
+
+.step.active {
+  background: #00e5ff;
+}
+
+/* GRID */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(30, 1fr);
+  gap: 3px;
+  margin: 20px 0;
+}
+
+.box {
+  width: 100%;
+  height: 10px;
+  background: #1a2035;
+}
+
+.box.active {
+  background: #22c55e;
+}
+
+/* LABEL */
+.days-label {
+  text-align: right;
+  color: gold;
+  margin-bottom: 15px;
+}
+
+/* OPTIONS */
+.options {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.option {
+  flex: 1;
+  background: #121828;
+  padding: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.option.active {
+  border: 2px solid #00e5ff;
+}
+
+/* ACTIONS */
+.actions {
+  display: flex;
+  justify-content: space-between;
+}
+/* CENTER ICON */
+.center-icon {
+  font-size: 50px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+/* BARS */
+.bars-preview {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.bars-preview .bar {
+  height: 10px;
+  width: 60px;
+  border-radius: 10px;
+}
+
+.c1 { background: #00e5ff; }
+.c2 { background: gold; }
+.c3 { background: #a855f7; }
+
+/* GOAL OPTIONS */
+.goal-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.goal-box {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: #121828;
+  padding: 12px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.goal-box.active {
+  border: 2px solid gold;
+}
+
+/* DAYS SELECT */
+.days-select {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+}
+
+.day-box {
+  padding: 10px;
+  background: #121828;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.day-box.active {
+  background: #00e5ff;
+  color: black;
+}
+
+/* REMINDER TOGGLE */
+.reminder-toggle {
+  display: flex;
+  justify-content: space-between;
+  margin: 15px 0;
+}
+
+/* PREVIEW */
+.preview-box {
+  background: #121828;
+  padding: 10px;
+  border-radius: 8px;
+  margin-bottom: 15px;
+  color: #aaa;
+}
