@@ -234,7 +234,7 @@ export default function Dashboard() {
   // 🔥 SAVE ALL DATA TO DATABASE
   const saveAllDataToDB = useCallback(async (userId, questsData, statsData, characterData) => {
     try {
-      await fetch(`http://localhost:5000/api/user/${userId}/quests`, {
+    await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}/quests`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -254,7 +254,7 @@ export default function Dashboard() {
   // 🔥 LOAD ALL DATA FROM DATABASE
   const loadAllDataFromDB = useCallback(async (userId) => {
     try {
-      const res = await fetch(`http://localhost:5000/api/user/${userId}/quests`, {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}/quests`, {
         credentials: "include"
       });
       const data = await res.json();
@@ -317,7 +317,7 @@ export default function Dashboard() {
           return;
         }
 
-        const res = await fetch(`http://localhost:5000/api/user/${userId}`);
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}`);
         
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);
@@ -370,7 +370,7 @@ export default function Dashboard() {
     // Save to database
     if (userId) {
       try {
-        await fetch(`http://localhost:5000/api/user/${userId}`, {
+       await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -415,7 +415,7 @@ export default function Dashboard() {
         await saveAllDataToDB(userId, quests, stats, character);
       }
       
-      await fetch("http://localhost:5000/api/logout", {
+      await fetch(`${process.env.REACT_APP_API_URL}/api/logout`, {
         method: "GET",
         credentials: "include",
       });
