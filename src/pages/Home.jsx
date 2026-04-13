@@ -51,102 +51,183 @@ export default function Home() {
             ⚔️ Start Your Quest — Free
           </button>
           <button 
-            onClick={() => document.getElementById("features")?.scrollIntoView({ behavior: "smooth" })}
+            onClick={() => document.getElementById("dashboard-preview")?.scrollIntoView({ behavior: "smooth" })}
             className="see-features"
           >
             See Features ↓
           </button>
         </div>
 
-        {/* Dashboard Preview */}
-        <div className="dashboard-preview">
-          <div className="dashboard">
-            {/* Header */}
-            <div className="dashboard-header">
-              <div className="app-title">HABITRACER</div>
-              <div className="tabs">
-                <div className="tab cyan"></div>
-                <div className="tab gold"></div>
-                <div className="tab purple"></div>
-                <div className="tab green"></div>
+        {/* Dashboard Preview - Matches actual dashboard design */}
+        <div className="dashboard-preview" id="dashboard-preview">
+          <div className="dashboard-container">
+            {/* Dashboard Header */}
+            <div className="dash-header">
+              <div className="dash-logo">HABIT<span>RACER</span></div>
+              <div className="dash-nav">
+                <span className="dash-nav-item active">⚔️ QUESTS</span>
+                <span className="dash-nav-item">📊 ANALYTICS</span>
+                <span className="dash-nav-item">👤 PROFILE</span>
+                <span className="dash-nav-item">⚡ UPGRADE</span>
               </div>
-              <button className="logout">LOGOUT</button>
+              <div className="dash-user">
+                <div className="dash-xp">
+                  <span className="xp-label">XP</span>
+                  <div className="xp-bar-track">
+                    <div className="xp-bar-fill" style={{ width: '64%' }}></div>
+                  </div>
+                </div>
+                <div className="dash-level">LVL 3</div>
+                <div className="dash-plan">FREE</div>
+                <div className="dash-avatar">🧙</div>
+              </div>
             </div>
 
-            <div className="dashboard-body">
-              {/* Left Side - Stats and Habits */}
-              <div className="dashboard-left">
-                <div className="stats">
-                  <div className="stat-item">
-                    <div className="label">TODAY</div>
-                    <div className="value cyan">2/3</div>
+            {/* Dashboard Main Content */}
+            <div className="dash-main">
+              {/* Left Column - Quests Section */}
+              <div className="dash-left">
+                {/* Stats Cards */}
+                <div className="stats-grid">
+                  <div className="stat-card cyan">
+                    <h4>Today</h4>
+                    <h2>2/3</h2>
                   </div>
-                  <div className="stat-item">
-                    <div className="label">STREAK</div>
-                    <div className="value gold">5</div>
+                  <div className="stat-card gold">
+                    <h4>Streak</h4>
+                    <h2>5</h2>
                   </div>
-                  <div className="stat-item">
-                    <div className="label">TOTAL XP</div>
-                    <div className="value purple">140</div>
+                  <div className="stat-card purple">
+                    <h4>XP</h4>
+                    <h2>140</h2>
                   </div>
-                </div>
-
-                <div className="progress-section">
-                  <div className="progress-circle cyan">
-                    <span>75%</span>
-                    <small>DAILY</small>
-                  </div>
-                  <div className="progress-circle purple">
-                    <span>45%</span>
-                    <small>WEEKLY</small>
-                  </div>
-                  <div className="progress-circle green">
-                    <span>63%</span>
-                    <small>OVERALL</small>
+                  <div className="stat-card green">
+                    <h4>Week</h4>
+                    <h2>67%</h2>
                   </div>
                 </div>
 
-                <div className="habits">
-                  <div className="habit completed">
-                    <span className="habit-text">🌅 Morning Run</span>
-                    <span className="status">✓</span>
+                {/* Progress Circles */}
+                <div className="circles-grid">
+                  <div className="circle-card">
+                    <svg width="90" height="90" viewBox="0 0 120 120">
+                      <circle cx="60" cy="60" r="50" fill="none" stroke="#1a2035" strokeWidth="8"/>
+                      <circle cx="60" cy="60" r="50" fill="none" stroke="#00e5ff" strokeWidth="8" 
+                        strokeDasharray="314" strokeDashoffset="78" strokeLinecap="round"
+                        transform="rotate(-90 60 60)"/>
+                    </svg>
+                    <div className="circle-text">75%<span>DAILY</span></div>
                   </div>
-                  <div className="habit">
-                    <span className="habit-text">📖 Read 20 Pages</span>
-                    <span className="status">○</span>
+                  <div className="circle-card">
+                    <svg width="90" height="90" viewBox="0 0 120 120">
+                      <circle cx="60" cy="60" r="50" fill="none" stroke="#1a2035" strokeWidth="8"/>
+                      <circle cx="60" cy="60" r="50" fill="none" stroke="#a855f7" strokeWidth="8" 
+                        strokeDasharray="314" strokeDashoffset="172" strokeLinecap="round"
+                        transform="rotate(-90 60 60)"/>
+                    </svg>
+                    <div className="circle-text">45%<span>WEEKLY</span></div>
                   </div>
-                  <div className="habit completed">
-                    <span className="habit-text">💧 Drink Water</span>
-                    <span className="status">✓</span>
+                  <div className="circle-card">
+                    <svg width="90" height="90" viewBox="0 0 120 120">
+                      <circle cx="60" cy="60" r="50" fill="none" stroke="#1a2035" strokeWidth="8"/>
+                      <circle cx="60" cy="60" r="50" fill="none" stroke="#22c55e" strokeWidth="8" 
+                        strokeDasharray="314" strokeDashoffset="116" strokeLinecap="round"
+                        transform="rotate(-90 60 60)"/>
+                    </svg>
+                    <div className="circle-text">63%<span>OVERALL</span></div>
+                  </div>
+                </div>
+
+                {/* Activity Graph Placeholder */}
+                <div className="activity-graph">
+                  <div className="graph-line"></div>
+                </div>
+
+                {/* Quests List */}
+                <div className="quests-list">
+                  <div className="quests-header">
+                    <span>ACTIVE QUESTS</span>
+                    <button className="new-quest-btn">＋ NEW QUEST</button>
+                  </div>
+                  <div className="quest-item">
+                    <div className="quest-info">
+                      <span className="quest-icon">🏃</span>
+                      <span className="quest-name">Morning Run</span>
+                    </div>
+                    <div className="complete-btn done">
+                      <div className="check-circle">✓</div>
+                    </div>
+                  </div>
+                  <div className="quest-item">
+                    <div className="quest-info">
+                      <span className="quest-icon">📖</span>
+                      <span className="quest-name">Read 20 Pages</span>
+                    </div>
+                    <div className="complete-btn">
+                      <div className="check-circle"></div>
+                    </div>
+                  </div>
+                  <div className="quest-item">
+                    <div className="quest-info">
+                      <span className="quest-icon">💧</span>
+                      <span className="quest-name">Drink Water</span>
+                    </div>
+                    <div className="complete-btn done">
+                      <div className="check-circle">✓</div>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* Right Side - Character Panel */}
-              <div className="character-panel">
-                <div className="character">
-                  <div className="avatar">🧙</div>
-                  <div className="name">WARRIOR</div>
-                </div>
+              {/* Right Column - Character Panel */}
+              <div className="dash-right">
+                <div className="character-card">
+                  <h4>YOUR CHARACTER</h4>
+                  <div className="character-avatar">🧙</div>
+                  <h3>Warrior</h3>
+                  <div className="character-class">WARRIOR</div>
+                  
+                  {/* XP Bar */}
+                  <div className="char-xp-bar">
+                    <div className="char-xp-fill" style={{ width: '64%' }}></div>
+                  </div>
+                  <p className="char-xp-text">64 / 100 XP</p>
 
-                <div className="xp-bars">
-                  <div className="bar-container">
-                    <span>STR</span>
-                    <div className="bar red">
-                      <div className="fill" style={{ width: '85%' }}></div>
+                  {/* Stats Bars */}
+                  <div className="char-stats">
+                    <div className="char-stat">
+                      <span>STRENGTH</span>
+                      <div className="stat-bar-bg">
+                        <div className="stat-bar-fill red" style={{ width: '85%' }}></div>
+                      </div>
+                    </div>
+                    <div className="char-stat">
+                      <span>WISDOM</span>
+                      <div className="stat-bar-bg">
+                        <div className="stat-bar-fill cyan" style={{ width: '60%' }}></div>
+                      </div>
+                    </div>
+                    <div className="char-stat">
+                      <span>ENDURANCE</span>
+                      <div className="stat-bar-bg">
+                        <div className="stat-bar-fill green" style={{ width: '75%' }}></div>
+                      </div>
+                    </div>
+                    <div className="char-stat">
+                      <span>FOCUS</span>
+                      <div className="stat-bar-bg">
+                        <div className="stat-bar-fill purple" style={{ width: '70%' }}></div>
+                      </div>
                     </div>
                   </div>
-                  <div className="bar-container">
-                    <span>INT</span>
-                    <div className="bar cyan">
-                      <div className="fill" style={{ width: '60%' }}></div>
+
+                  {/* Evolution Progress */}
+                  <div className="evolution-section">
+                    <div className="evolution-label">NEXT EVOLUTION</div>
+                    <div className="evolution-bar">
+                      <div className="evolution-fill" style={{ width: '28%' }}></div>
                     </div>
-                  </div>
-                  <div className="bar-container">
-                    <span>DEX</span>
-                    <div className="bar green">
-                      <div className="fill" style={{ width: '75%' }}></div>
-                    </div>
+                    <div className="evolution-text">14 / 50 completions</div>
                   </div>
                 </div>
               </div>
