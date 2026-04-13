@@ -1226,3 +1226,504 @@ h1 {
     margin: 20px auto;
   }
 }
+/* ====================== FEATURES SECTION STYLES ====================== */
+.features-section {
+  padding: 80px 40px 100px;
+  background: linear-gradient(180deg, #0a0e1f, #05070f);
+  position: relative;
+}
+
+.features-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.features-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.features-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 229, 255, 0.1);
+  color: #00e5ff;
+  padding: 8px 24px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  margin-bottom: 20px;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 0.1em;
+}
+
+.features-header h2 {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff, #00e5ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+
+.features-subtitle {
+  font-size: 18px;
+  color: #94a3b8;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 30px;
+}
+
+.feature-card {
+  background: rgba(22, 30, 48, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 28px;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--feature-color);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--feature-color);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.feature-card:hover::before {
+  opacity: 1;
+}
+
+.feature-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  transition: all 0.3s ease;
+}
+
+.feature-icon span {
+  font-size: 32px;
+}
+
+.feature-card h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #ffffff;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.feature-card p {
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+/* Feature Graphics - Clean and Minimal */
+.feature-graphic {
+  margin: 16px 0;
+  padding: 0;
+  background: transparent;
+  border-radius: 0;
+}
+
+/* RPG Habit System Graphic */
+.quest-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mini-quest {
+  font-size: 13px;
+  padding: 8px 12px;
+  background: rgba(0, 229, 255, 0.08);
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  font-family: 'Inter', sans-serif;
+  border-left: 3px solid #00e5ff;
+}
+
+.mini-quest span:last-child {
+  color: #22c55e;
+}
+
+.quest-streak {
+  font-size: 12px;
+  color: #ffd84d;
+  text-align: center;
+  margin-top: 10px;
+  font-family: 'Orbitron', monospace;
+  padding: 6px;
+  background: rgba(255, 216, 77, 0.1);
+  border-radius: 8px;
+}
+
+/* Evolving Character Graphic */
+.evo-chain {
+  text-align: center;
+}
+
+.evo-tier {
+  font-size: 24px;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  background: rgba(168, 85, 247, 0.1);
+  padding: 8px;
+  border-radius: 12px;
+}
+
+.evo-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.evo-bar {
+  height: 6px;
+  background: #1f2a4a;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.evo-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #a855f7, #c084fc);
+  border-radius: 10px;
+}
+
+.evo-progress span {
+  font-size: 12px;
+  color: #a855f7;
+  font-family: 'Orbitron', monospace;
+}
+
+/* Analytics Dashboard Graphic */
+.analytics-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.mini-stats {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #94a3b8;
+  font-family: 'Orbitron', monospace;
+  padding: 8px;
+  background: rgba(34, 197, 94, 0.05);
+  border-radius: 10px;
+}
+
+.mini-stats span {
+  color: #22c55e;
+}
+
+.mini-heatmap {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 8px;
+  background: rgba(34, 197, 94, 0.03);
+  border-radius: 10px;
+}
+
+.heat-cell {
+  width: 22px;
+  height: 22px;
+  background: #1f2a4a;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.heat-cell.active {
+  background: #22c55e;
+  box-shadow: 0 0 6px #22c55e;
+}
+
+/* 3 Habits Free Graphic */
+.free-badge {
+  text-align: center;
+  font-size: 12px;
+  font-weight: bold;
+  color: #ffd84d;
+  margin-bottom: 12px;
+  font-family: 'Orbitron', monospace;
+  background: rgba(255, 216, 77, 0.1);
+  padding: 6px;
+  border-radius: 20px;
+}
+
+.habit-limit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.habit-slot {
+  font-size: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+}
+
+.habit-slot.active {
+  border-left: 3px solid #22c55e;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.habit-slot.locked {
+  opacity: 0.5;
+  font-size: 11px;
+  text-align: center;
+}
+
+/* Smart Reminders Graphic */
+.reminder-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.reminder-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  padding: 8px 12px;
+  background: rgba(249, 115, 22, 0.08);
+  border-radius: 10px;
+  flex-wrap: wrap;
+}
+
+.reminder-icon {
+  font-size: 14px;
+}
+
+.reminder-days {
+  font-size: 10px;
+  color: #f97316;
+  margin-left: auto;
+  font-family: 'Orbitron', monospace;
+}
+
+.reminder-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+  background: rgba(249, 115, 22, 0.05);
+  border-radius: 10px;
+  font-size: 12px;
+}
+
+.toggle-switch {
+  width: 36px;
+  height: 18px;
+  background: #1f2a4a;
+  border-radius: 20px;
+  position: relative;
+  transition: all 0.3s;
+}
+
+.toggle-switch.on {
+  background: #f97316;
+}
+
+.toggle-switch.on::after {
+  transform: translateX(18px);
+}
+
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  background: white;
+  border-radius: 50%;
+  top: 2px;
+  left: 2px;
+  transition: transform 0.3s;
+}
+
+/* XP & Leveling Graphic */
+.xp-preview {
+  text-align: center;
+}
+
+.xp-level {
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffd84d;
+  font-family: 'Orbitron', monospace;
+  margin-bottom: 12px;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 6px;
+  border-radius: 12px;
+}
+
+.xp-bar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.xp-bar-bg {
+  height: 8px;
+  background: #1f2a4a;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.xp-bar-progress {
+  height: 100%;
+  background: linear-gradient(90deg, #ef4444, #f97316);
+  border-radius: 10px;
+}
+
+.xp-bar-container span {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.xp-rewards {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: #ffd84d;
+  font-family: 'Orbitron', monospace;
+  flex-wrap: wrap;
+}
+
+/* Responsive Features Section */
+@media (max-width: 1024px) {
+  .features-section {
+    padding: 60px 30px 80px;
+  }
+  
+  .features-header h2 {
+    font-size: 40px;
+  }
+  
+  .features-grid {
+    gap: 25px;
+  }
+  
+  .feature-card {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 900px) {
+  .features-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .features-header h2 {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .features-section {
+    padding: 50px 20px 60px;
+  }
+  
+  .features-header {
+    margin-bottom: 40px;
+  }
+  
+  .features-header h2 {
+    font-size: 28px;
+  }
+  
+  .features-badge {
+    font-size: 12px;
+    padding: 6px 18px;
+  }
+  
+  .features-subtitle {
+    font-size: 14px;
+  }
+  
+  .feature-card {
+    padding: 20px;
+  }
+  
+  .feature-icon {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .feature-icon span {
+    font-size: 26px;
+  }
+  
+  .feature-card h3 {
+    font-size: 18px;
+  }
+  
+  .feature-card p {
+    font-size: 13px;
+  }
+  
+  .mini-quest, .habit-slot, .reminder-item {
+    font-size: 11px;
+    padding: 6px 10px;
+  }
+  
+  .evo-tier {
+    font-size: 18px;
+  }
+  
+  .heat-cell {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (max-width: 580px) {
+  .features-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .features-header h2 {
+    font-size: 24px;
+  }
+}
