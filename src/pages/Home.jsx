@@ -432,6 +432,55 @@ export default function Home() {
           </div>
         </div>
       </section>
+            {/* How It Works Section */}
+      <section className="howitworks-section" id="howitworks">
+        <div className="howitworks-container">
+          <div className="howitworks-header">
+            <div className="howitworks-badge">📋 HOW IT WORKS</div>
+            <h2>Start in 4 Simple Steps</h2>
+            <p className="howitworks-subtitle">
+              No complicated setup. Just sign up, build your quest, and start earning XP from day one.
+            </p>
+          </div>
+
+          <div className="steps-grid">
+            <div className="step-card">
+              <div className="step-number">01</div>
+              <div className="step-icon">🎮</div>
+              <h3>Create Your Hero</h3>
+              <p>Sign up in seconds. Pick your avatar, name your hero, and enter the Habitracer universe.</p>
+            </div>
+
+            <div className="step-card">
+              <div className="step-number">02</div>
+              <div className="step-icon">⚔️</div>
+              <h3>Build Your Quests</h3>
+              <p>Use our 4-step wizard to create habits—set your duration, daily target, and reminders.</p>
+            </div>
+
+            <div className="step-card">
+              <div className="step-number">03</div>
+              <div className="step-icon">✅</div>
+              <h3>Complete Daily</h3>
+              <p>Check off habits each day. Build streaks, earn XP at the end of every day you finish strong.</p>
+            </div>
+
+            <div className="step-card">
+              <div className="step-number">04</div>
+              <div className="step-icon">🌟</div>
+              <h3>Level Up & Evolve</h3>
+              <p>Watch your character evolve through 6 stunning tiers as your habit count grows.</p>
+            </div>
+          </div>
+
+          {/* CTA Button */}
+          <div className="howitworks-cta">
+            <button onClick={() => navigate("/register")} className="start-journey-btn">
+              ⚔️ Start Your Journey Now
+            </button>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

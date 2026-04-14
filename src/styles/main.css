@@ -1977,3 +1977,284 @@ h1 {
     transform: rotate(90deg);
   }
 }
+/* ====================== HOW IT WORKS SECTION ====================== */
+.howitworks-section {
+  padding: 80px 40px 100px;
+  background: linear-gradient(180deg, #0a0e1f, #05070f);
+  position: relative;
+  overflow: hidden;
+}
+
+.howitworks-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #00e5ff, #ffd84d, #00e5ff, transparent);
+}
+
+.howitworks-container {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+.howitworks-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.howitworks-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(0, 229, 255, 0.1);
+  color: #00e5ff;
+  padding: 8px 24px;
+  border-radius: 50px;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  margin-bottom: 20px;
+  font-family: 'Orbitron', monospace;
+  letter-spacing: 0.1em;
+}
+
+.howitworks-header h2 {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #ffffff, #00e5ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+
+.howitworks-subtitle {
+  font-size: 18px;
+  color: #94a3b8;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.steps-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 30px;
+  margin-bottom: 50px;
+}
+
+.step-card {
+  background: rgba(22, 30, 48, 0.8);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 24px;
+  padding: 32px 24px;
+  text-align: center;
+  transition: all 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.step-card::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #00e5ff, #a855f7);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.step-card:hover {
+  transform: translateY(-8px);
+  border-color: #00e5ff;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.step-card:hover::before {
+  opacity: 1;
+}
+
+.step-number {
+  font-size: 48px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #00e5ff, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-family: 'Orbitron', monospace;
+  margin-bottom: 16px;
+  line-height: 1;
+}
+
+.step-icon {
+  font-size: 48px;
+  margin-bottom: 20px;
+  transition: transform 0.3s ease;
+}
+
+.step-card:hover .step-icon {
+  transform: scale(1.1);
+}
+
+.step-card h3 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: #ffffff;
+  font-family: 'Rajdhani', sans-serif;
+}
+
+.step-card p {
+  font-size: 14px;
+  color: #94a3b8;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* CTA Button */
+.howitworks-cta {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.start-journey-btn {
+  background: linear-gradient(90deg, #00f0ff, #00ffaa);
+  color: #000;
+  font-size: 18px;
+  font-weight: 700;
+  padding: 16px 42px;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 25px rgba(0, 240, 255, 0.5);
+  font-family: 'Rajdhani', sans-serif;
+  letter-spacing: 0.5px;
+}
+
+.start-journey-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 240, 255, 0.4);
+}
+
+/* Responsive How It Works Section */
+@media (max-width: 1024px) {
+  .howitworks-section {
+    padding: 60px 30px 80px;
+  }
+  
+  .howitworks-header h2 {
+    font-size: 40px;
+  }
+  
+  .steps-grid {
+    gap: 25px;
+  }
+  
+  .step-card {
+    padding: 28px 20px;
+  }
+  
+  .step-number {
+    font-size: 42px;
+  }
+  
+  .step-icon {
+    font-size: 42px;
+  }
+  
+  .step-card h3 {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 900px) {
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 25px;
+  }
+  
+  .howitworks-header h2 {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 768px) {
+  .howitworks-section {
+    padding: 50px 20px 60px;
+  }
+  
+  .howitworks-header {
+    margin-bottom: 40px;
+  }
+  
+  .howitworks-header h2 {
+    font-size: 28px;
+  }
+  
+  .howitworks-badge {
+    font-size: 12px;
+    padding: 6px 18px;
+  }
+  
+  .howitworks-subtitle {
+    font-size: 14px;
+  }
+  
+  .step-card {
+    padding: 24px 16px;
+  }
+  
+  .step-number {
+    font-size: 36px;
+  }
+  
+  .step-icon {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+  
+  .step-card h3 {
+    font-size: 18px;
+  }
+  
+  .step-card p {
+    font-size: 13px;
+  }
+  
+  .start-journey-btn {
+    font-size: 16px;
+    padding: 14px 32px;
+  }
+}
+
+@media (max-width: 580px) {
+  .steps-grid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .howitworks-header h2 {
+    font-size: 24px;
+  }
+  
+  .step-card {
+    max-width: 320px;
+    margin: 0 auto;
+  }
+}
+
+/* Landscape Mode for How It Works */
+@media (max-width: 900px) and (orientation: landscape) {
+  .steps-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .howitworks-section {
+    padding: 40px 20px 50px;
+  }
+}
