@@ -352,6 +352,86 @@ export default function Home() {
           </div>
         </div>
       </section>
+            {/* Character Evolution Section */}
+      <section className="evolution-section-home" id="evolution">
+        <div className="evolution-container">
+          <div className="evolution-header">
+            <div className="evolution-badge">🌟 CHARACTER EVOLUTION</div>
+            <h2>Evolve As You Grow</h2>
+            <p className="evolution-subtitle">
+              Your character visually upgrades as you complete habits. From Novice to Mythic—every milestone changes your warrior.
+            </p>
+          </div>
+
+          <div className="evolution-timeline">
+            <div className="evolution-stages">
+              <div className="stage-card">
+                <div className="stage-icon">🧙</div>
+                <h4>NOVICE</h4>
+                <div className="stage-milestone">Start</div>
+                <div className="stage-progress-bar">
+                  <div className="stage-progress-fill" style={{ width: '0%' }}></div>
+                </div>
+              </div>
+
+              <div className="stage-arrow">→</div>
+
+              <div className="stage-card">
+                <div className="stage-icon">⚔️</div>
+                <h4>APPRENTICE</h4>
+                <div className="stage-milestone">10 done</div>
+                <div className="stage-progress-bar">
+                  <div className="stage-progress-fill" style={{ width: '20%' }}></div>
+                </div>
+              </div>
+
+              <div className="stage-arrow">→</div>
+
+              <div className="stage-card">
+                <div className="stage-icon">🛡️</div>
+                <h4>WARRIOR</h4>
+                <div className="stage-milestone">25 done</div>
+                <div className="stage-progress-bar">
+                  <div className="stage-progress-fill" style={{ width: '50%' }}></div>
+                </div>
+              </div>
+
+              <div className="stage-arrow">→</div>
+
+              <div className="stage-card">
+                <div className="stage-icon">👑</div>
+                <h4>CHAMPION</h4>
+                <div className="stage-milestone">50 done</div>
+                <div className="stage-progress-bar">
+                  <div className="stage-progress-fill" style={{ width: '100%' }}></div>
+                </div>
+              </div>
+
+              <div className="stage-arrow">→</div>
+
+              <div className="stage-card">
+                <div className="stage-icon">🌟</div>
+                <h4>LEGEND</h4>
+                <div className="stage-milestone">100 done</div>
+                <div className="stage-progress-bar">
+                  <div className="stage-progress-fill" style={{ width: '100%' }}></div>
+                </div>
+              </div>
+
+              <div className="stage-arrow">→</div>
+
+              <div className="stage-card">
+                <div className="stage-icon">✨</div>
+                <h4>MYTHIC</h4>
+                <div className="stage-milestone">200 done</div>
+                <div className="stage-progress-bar">
+                  <div className="stage-progress-fill" style={{ width: '100%' }}></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
