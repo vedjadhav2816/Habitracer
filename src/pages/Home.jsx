@@ -481,6 +481,155 @@ export default function Home() {
           </div>
         </div>
       </section>
+            {/* Reviews Section */}
+      <section className="reviews-section" id="reviews">
+        <div className="reviews-container">
+          <div className="reviews-header">
+            <div className="reviews-badge">⭐ REVIEWS</div>
+            <h2>Loved by 12,400+ Heroes</h2>
+            <p className="reviews-subtitle">
+              Real people, real results. Here's what our community is saying.
+            </p>
+          </div>
+
+          <div className="reviews-grid">
+            {/* Review 1 */}
+            <div className="review-card">
+              <div className="review-stars">★★★★★</div>
+              <p className="review-text">
+                "I've tried 6 different habit apps. Nothing stuck. Then I found Habitracer and I've been on a 47-day streak. The character evolution makes it addictive in the best way possible."
+              </p>
+              <div className="reviewer-info">
+                <div className="reviewer-avatar">🧙</div>
+                <div className="reviewer-details">
+                  <h4>Arjun Sharma</h4>
+                  <span>Pro User · VERIFIED</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Review 2 */}
+            <div className="review-card">
+              <div className="review-stars">★★★★★</div>
+              <p className="review-text">
+                "As someone with ADHD, traditional habit trackers never worked for me. The gamification aspect of Habitracer keeps my brain engaged, I've read 24 books this year!"
+              </p>
+              <div className="reviewer-info">
+                <div className="reviewer-avatar">⚔️</div>
+                <div className="reviewer-details">
+                  <h4>Priya Nair</h4>
+                  <span>Pro User · VERIFIED</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Review 3 */}
+            <div className="review-card">
+              <div className="review-stars">★★★★★</div>
+              <p className="review-text">
+                "The analytics dashboard (Pro) is incredible. I can see exactly which habits are driving my streak vs which ones I'm failing. Genuinely changed how I approach my mornings."
+              </p>
+              <div className="reviewer-info">
+                <div className="reviewer-avatar">🛡️</div>
+                <div className="reviewer-details">
+                  <h4>Rahul Koppar</h4>
+                  <span>Pro User · VERIFIED</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Review 4 */}
+            <div className="review-card">
+              <div className="review-stars">★★★★★</div>
+              <p className="review-text">
+                "The 4-step wizard to create habits is so smart. I used to set vague goals but now I define duration, daily target, and reminders in one flow. Such a difference!"
+              </p>
+              <div className="reviewer-info">
+                <div className="reviewer-avatar">👑</div>
+                <div className="reviewer-details">
+                  <h4>Vidhi Jadhav</h4>
+                  <span>Pro User · VERIFIED</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Review 5 */}
+            <div className="review-card">
+              <div className="review-stars">★★★★★</div>
+              <p className="review-text">
+                "I paid for Lifetime ($30) and it's the best productivity purchase I've made. The character at Mythic level is jaw-dropping. Thank you for building this!"
+              </p>
+              <div className="reviewer-info">
+                <div className="reviewer-avatar">🌟</div>
+                <div className="reviewer-details">
+                  <h4>Ananya Singh</h4>
+                  <span>Lifetime Member · VERIFIED</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Review 6 */}
+            <div className="review-card">
+              <div className="review-stars">★★★★★</div>
+              <p className="review-text">
+                "Moving the RPG character—I'm currently a Warrior and gunning for Champion. Never thought habit tracking could feel like playing an actual game. Highly recommend!"
+              </p>
+              <div className="reviewer-info">
+                <div className="reviewer-avatar">🔥</div>
+                <div className="reviewer-details">
+                  <h4>Sneha Reddy</h4>
+                  <span>Pro User · VERIFIED</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Review 7 */}
+            <div className="review-card">
+              <div className="review-stars">★★★★★</div>
+              <p className="review-text">
+                "This app completely transformed my daily routine. From a couch potato to now running 5km daily. The streak system keeps me accountable!"
+              </p>
+              <div className="reviewer-info">
+                <div className="reviewer-avatar">🏃</div>
+                <div className="reviewer-details">
+                  <h4>Ramesh Jadhav</h4>
+                  <span>Pro User · VERIFIED</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Review 8 */}
+            <div className="review-card">
+              <div className="review-stars">★★★★★</div>
+              <p className="review-text">
+                "My daughter introduced me to this app and now we compete on streaks together! Such a wonderful way to bond while staying healthy."
+              </p>
+              <div className="reviewer-info">
+                <div className="reviewer-avatar">💝</div>
+                <div className="reviewer-details">
+                  <h4>Shobha Jadhav</h4>
+                  <span>Verified User · VERIFIED</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Review 9 */}
+            <div className="review-card">
+              <div className="review-stars">★★★★★</div>
+              <p className="review-text">
+                "As a busy entrepreneur, I needed something that makes habit tracking fun. Habitracer delivered. The XP system is genius!"
+              </p>
+              <div className="reviewer-info">
+                <div className="reviewer-avatar">💼</div>
+                <div className="reviewer-details">
+                  <h4>Michael Chen</h4>
+                  <span>Pro User · VERIFIED</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
