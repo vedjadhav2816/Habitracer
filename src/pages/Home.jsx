@@ -630,6 +630,43 @@ export default function Home() {
           </div>
         </div>
       </section>
+            {/* Call to Action Section */}
+      <section className="cta-section" id="cta">
+        <div className="cta-container">
+          <div className="cta-content">
+            <div className="cta-badge">⚡ READY TO BEGIN YOUR QUEST? ⚡</div>
+            <h2 className="cta-title">
+              Join <span className="cta-highlight">1000+ Heroes</span> Who Have Already Started<br />
+              Leveling Up Their Habits
+            </h2>
+            <p className="cta-subtitle">
+              Free to start. No credit card needed. No excuses. Just results.
+            </p>
+            <div className="cta-buttons">
+              <button onClick={() => navigate("/register")} className="cta-primary-btn">
+                🎮 Create Free Account →
+              </button>
+              <button onClick={() => navigate("/login")} className="cta-secondary-btn">
+                Already a Hero? Login →
+              </button>
+            </div>
+            <div className="cta-stats">
+              <div className="cta-stat">
+                <span className="stat-number">1000+</span>
+                <span className="stat-label">Active Heroes</span>
+              </div>
+              <div className="cta-stat">
+                <span className="stat-number">47d</span>
+                <span className="stat-label">Average Streak</span>
+              </div>
+              <div className="cta-stat">
+                <span className="stat-number">4.9⭐</span>
+                <span className="stat-label">User Rating</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
