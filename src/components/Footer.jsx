@@ -1,6 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTwitter, faDiscord, faGithub, faInstagram } from '@fortawesome/free-brands-svg-icons';
 import "../styles/footer.css";
 
 export default function Footer() {
@@ -18,22 +16,14 @@ export default function Footer() {
             Build streaks, evolve your character, and level up your life — one habit at a time.
           </p>
           <div className="footer-social">
-            <a href="https://twitter.com/habitracer" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Twitter">
-              <FontAwesomeIcon icon={faTwitter} />
-            </a>
-            <a href="https://discord.gg/habitracer" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Discord">
-              <FontAwesomeIcon icon={faDiscord} />
-            </a>
-            <a href="https://github.com/vedjadhav2816/Habitracer" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="GitHub">
-              <FontAwesomeIcon icon={faGithub} />
-            </a>
-            <a href="https://instagram.com/habitracer" target="_blank" rel="noopener noreferrer" className="social-icon" aria-label="Instagram">
-              <FontAwesomeIcon icon={faInstagram} />
-            </a>
+            <a href="#" className="social-icon" aria-label="Twitter">𝕏</a>
+            <a href="#" className="social-icon" aria-label="Discord">🎮</a>
+            <a href="#" className="social-icon" aria-label="GitHub">⌨️</a>
+            <a href="#" className="social-icon" aria-label="Instagram">📸</a>
           </div>
         </div>
 
-        {/* Rest of your footer code remains the same */}
+        {/* Quick Links */}
         <div className="footer-links">
           <h4>Quick Links</h4>
           <ul>
@@ -45,6 +35,7 @@ export default function Footer() {
           </ul>
         </div>
 
+        {/* Features Links */}
         <div className="footer-links">
           <h4>Features</h4>
           <ul>
@@ -56,6 +47,7 @@ export default function Footer() {
           </ul>
         </div>
 
+        {/* Resources */}
         <div className="footer-links">
           <h4>Resources</h4>
           <ul>
@@ -67,6 +59,7 @@ export default function Footer() {
           </ul>
         </div>
 
+        {/* Contact & Legal */}
         <div className="footer-links">
           <h4>Legal</h4>
           <ul>
@@ -78,6 +71,7 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Bottom Bar */}
       <div className="footer-bottom">
         <div className="footer-bottom-content">
           <p>&copy; {currentYear} HabitRacer. All rights reserved.</p>
