@@ -3,6 +3,8 @@ import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
+import Analytics from "./pages/Analytics";
+
 
 
 
@@ -14,6 +16,7 @@ function App() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/analytics" element={<Analytics />} />
       </Routes>
     </Router>
   );
