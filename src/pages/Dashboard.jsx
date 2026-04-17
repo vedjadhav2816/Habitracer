@@ -9,6 +9,7 @@ import {
 } from "recharts";
 
 import CreateQuestModal from "../components/CreateQuestModal";
+import Analytics from "./Analytics"; // Import the Analytics component
 
 // Move ProfilePage outside Dashboard component to prevent re-renders
 const ProfilePage = memo(({ 
@@ -800,16 +801,9 @@ export default function Dashboard() {
           />
         )}
         
-        {activeTab === "analytics" && (
-          <div className="analytics-placeholder">
-            <div className="lock-overlay">
-              <div className="lock-icon">🔒</div>
-              <div className="lock-title">ANALYTICS — COMING SOON</div>
-              <div className="lock-sub">Detailed analytics will be available in the next update!</div>
-            </div>
-          </div>
-        )}
-
+        {/* REPLACED THE PLACEHOLDER WITH ACTUAL ANALYTICS COMPONENT */}
+        {activeTab === "analytics" && <Analytics />}
+        
         {activeTab === "upgrade" && (
           <div className="upgrade-placeholder">
             <div className="lock-overlay">
