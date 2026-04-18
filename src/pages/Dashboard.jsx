@@ -10,6 +10,7 @@ import {
 
 import CreateQuestModal from "../components/CreateQuestModal";
 import Analytics from "./Analytics"; // Import the Analytics component
+import Upgrade from "./Upgrade";
 
 // Move ProfilePage outside Dashboard component to prevent re-renders
 const ProfilePage = memo(({ 
@@ -804,16 +805,7 @@ export default function Dashboard() {
         {/* REPLACED THE PLACEHOLDER WITH ACTUAL ANALYTICS COMPONENT */}
         {activeTab === "analytics" && <Analytics />}
         
-        {activeTab === "upgrade" && (
-          <div className="upgrade-placeholder">
-            <div className="lock-overlay">
-              <div className="lock-icon">⚡</div>
-              <div className="lock-title">UPGRADE TO PRO</div>
-              <div className="lock-sub">Unlock unlimited quests, advanced analytics, and exclusive features!</div>
-              <button className="upgrade-btn">COMING SOON</button>
-            </div>
-          </div>
-        )}
+        {activeTab === "upgrade" && <Upgrade />}
       </div>
 
       {showModal && (
