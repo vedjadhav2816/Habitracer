@@ -2,18 +2,22 @@
 .upgrade-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #0a0e1f 0%, #05070f 100%);
-  padding: 100px 40px 80px;
+  padding: 90px 40px 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .upgrade-container {
-  max-width: 1280px;
+  max-width: 1300px;
   margin: 0 auto;
+  width: 100%;
 }
 
 /* Header */
 .upgrade-header {
   text-align: center;
-  margin-bottom: 50px;
+  margin-bottom: 40px;
 }
 
 .upgrade-badge {
@@ -22,85 +26,69 @@
   gap: 8px;
   background: rgba(0, 229, 255, 0.1);
   color: #00e5ff;
-  padding: 8px 24px;
+  padding: 6px 20px;
   border-radius: 50px;
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
   border: 1px solid rgba(0, 229, 255, 0.3);
-  margin-bottom: 20px;
+  margin-bottom: 16px;
   font-family: 'Orbitron', monospace;
   letter-spacing: 0.1em;
 }
 
 .upgrade-header h1 {
-  font-size: 48px;
+  font-size: 42px;
   font-weight: 800;
-  background: linear-gradient(135deg, #ffffff, #00e5ff);
+  margin-bottom: 12px;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #00e5ff, #a855f7, #ffd84d);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 16px;
 }
 
 .upgrade-subtitle {
-  font-size: 18px;
+  font-size: 16px;
   color: #94a3b8;
-  max-width: 600px;
+  max-width: 550px;
   margin: 0 auto;
-  line-height: 1.6;
+  line-height: 1.5;
 }
 
-/* Current Plan Banner */
-.current-plan-banner {
-  background: rgba(168, 85, 247, 0.15);
-  border: 1px solid #a855f7;
-  border-radius: 12px;
-  padding: 12px 20px;
-  text-align: center;
-  margin-bottom: 40px;
-  max-width: 500px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.current-plan-banner span {
-  color: #cbd5e1;
-  font-size: 14px;
-}
-
-.current-plan-banner strong {
-  color: #a855f7;
-  font-family: 'Orbitron', monospace;
-}
-
-/* Pricing Grid */
+/* Pricing Grid - Centered */
 .pricing-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
-  margin-bottom: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+  gap: 25px;
+  margin-bottom: 35px;
+  flex-wrap: wrap;
 }
 
 .pricing-card {
-  background: rgba(22, 30, 48, 0.8);
+  background: rgba(22, 30, 48, 0.9);
   backdrop-filter: blur(10px);
-  border-radius: 24px;
-  padding: 32px 28px;
+  border-radius: 20px;
+  padding: 24px 22px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.3s ease;
   position: relative;
   display: flex;
   flex-direction: column;
+  width: 280px;
+  min-width: 260px;
 }
 
 .pricing-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-4px);
   border-color: var(--plan-color);
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
 }
 
 .pricing-card.popular {
   border-color: #a855f7;
-  box-shadow: 0 0 30px rgba(168, 85, 247, 0.2);
+  box-shadow: 0 0 20px rgba(168, 85, 247, 0.15);
   transform: scale(1.02);
 }
 
@@ -109,71 +97,111 @@
   background: rgba(255, 216, 77, 0.05);
 }
 
+/* Badges */
 .popular-badge {
   position: absolute;
-  top: -12px;
+  top: -10px;
   left: 50%;
   transform: translateX(-50%);
   background: linear-gradient(135deg, #a855f7, #7c3aed);
   color: white;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 700;
-  padding: 6px 16px;
+  padding: 4px 14px;
   border-radius: 50px;
   font-family: 'Orbitron', monospace;
-  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.most-sold-badge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ffd84d, #ffb800);
+  color: #07090f;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 4px 14px;
+  border-radius: 50px;
+  font-family: 'Orbitron', monospace;
+  white-space: nowrap;
+}
+
+.savings-badge {
+  position: absolute;
+  top: 50px;
+  right: -8px;
+  background: #22c55e;
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-family: 'Orbitron', monospace;
+}
+
+.savings-badge.lifetime {
+  background: #ffd84d;
+  color: #07090f;
 }
 
 /* Plan Header */
 .plan-header {
   text-align: center;
-  margin-bottom: 24px;
-  padding-bottom: 20px;
+  margin-bottom: 18px;
+  padding-bottom: 15px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .plan-header h3 {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
-  color: var(--plan-color);
   font-family: 'Orbitron', monospace;
   letter-spacing: 1px;
-  margin-bottom: 12px;
-}
-
-.plan-price {
   margin-bottom: 8px;
 }
 
+.plan-price {
+  margin-bottom: 4px;
+}
+
 .plan-price .price {
-  font-size: 42px;
+  font-size: 38px;
   font-weight: 800;
   color: #fff;
   font-family: 'Orbitron', monospace;
 }
 
 .plan-price .period {
-  font-size: 14px;
+  font-size: 12px;
   color: #94a3b8;
 }
 
-.plan-description {
-  font-size: 12px;
-  color: #64748b;
+.plan-savings {
+  font-size: 10px;
+  color: #22c55e;
+  margin-top: 4px;
 }
 
-/* Plan Features */
+.plan-description {
+  font-size: 11px;
+  color: #64748b;
+  margin-top: 6px;
+}
+
+/* Plan Features - Compact */
 .plan-features {
   flex: 1;
-  margin-bottom: 28px;
+  margin-bottom: 18px;
 }
 
 .feature-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 0;
-  font-size: 13px;
+  gap: 8px;
+  padding: 6px 0;
+  font-size: 12px;
 }
 
 .feature-item.included {
@@ -186,32 +214,49 @@
 }
 
 .feature-icon {
-  width: 20px;
-  font-size: 14px;
+  width: 22px;
+  font-size: 12px;
 }
 
 .feature-item.included .feature-icon {
   color: #22c55e;
 }
 
-.feature-item.excluded .feature-icon {
-  color: #64748b;
+/* Social Proof */
+.social-proof {
+  text-align: center;
+  margin: 12px 0 10px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+}
+
+.proof-stars {
+  font-size: 11px;
+  color: #ffd84d;
+  margin-bottom: 3px;
+}
+
+.proof-text {
+  font-size: 10px;
+  color: #94a3b8;
 }
 
 /* Plan Button */
 .plan-button {
   width: 100%;
-  padding: 12px 20px;
+  padding: 10px 16px;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50px;
-  font-size: 14px;
+  border-radius: 40px;
+  font-size: 13px;
   font-weight: 600;
   color: #fff;
   cursor: pointer;
   transition: all 0.3s ease;
   font-family: 'Rajdhani', sans-serif;
   letter-spacing: 0.5px;
+  margin-top: 5px;
 }
 
 .plan-button:hover:not(:disabled) {
@@ -229,7 +274,7 @@
 
 .plan-button.popular-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 20px rgba(168, 85, 247, 0.3);
+  box-shadow: 0 8px 20px rgba(168, 85, 247, 0.3);
 }
 
 .plan-button.current-btn {
@@ -244,16 +289,26 @@
   cursor: not-allowed;
 }
 
+/* Risk Reversal */
+.risk-reversal {
+  text-align: center;
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
 /* Trust Badges */
 .trust-badges {
   display: flex;
   justify-content: center;
-  gap: 40px;
+  gap: 30px;
   flex-wrap: wrap;
-  margin-bottom: 60px;
-  padding: 20px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 30px;
+  padding: 15px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .trust-item {
@@ -263,58 +318,26 @@
 }
 
 .trust-item span {
-  font-size: 20px;
+  font-size: 18px;
 }
 
 .trust-item p {
-  font-size: 13px;
+  font-size: 12px;
   color: #94a3b8;
 }
 
-/* FAQ Section */
-.faq-section {
+/* FAQ Mini */
+.faq-mini {
   text-align: center;
 }
 
-.faq-section h3 {
-  font-size: 24px;
-  font-weight: 700;
-  color: #fff;
-  margin-bottom: 30px;
-  font-family: 'Orbitron', monospace;
+.faq-mini p {
+  font-size: 12px;
+  color: #64748b;
 }
 
-.faq-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
-  text-align: left;
-}
-
-.faq-item {
-  background: rgba(22, 30, 48, 0.6);
-  border-radius: 16px;
-  padding: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
-}
-
-.faq-item:hover {
-  border-color: #00e5ff;
-}
-
-.faq-item h4 {
-  font-size: 16px;
-  font-weight: 600;
+.faq-mini strong {
   color: #00e5ff;
-  margin-bottom: 8px;
-  font-family: 'Rajdhani', sans-serif;
-}
-
-.faq-item p {
-  font-size: 13px;
-  color: #94a3b8;
-  line-height: 1.5;
 }
 
 /* Loading State */
@@ -328,7 +351,7 @@
 }
 
 .loading-spinner {
-  font-size: 60px;
+  font-size: 50px;
   animation: spin 1s linear infinite;
 }
 
@@ -338,115 +361,83 @@
 }
 
 .upgrade-loading p {
-  margin-top: 20px;
+  margin-top: 15px;
   color: #00e5ff;
   font-family: 'Orbitron', monospace;
+  font-size: 14px;
 }
 
 /* Responsive */
-@media (max-width: 1024px) {
-  .upgrade-page {
-    padding: 90px 30px 60px;
-  }
-  
-  .upgrade-header h1 {
-    font-size: 40px;
-  }
-  
+@media (max-width: 1000px) {
   .pricing-grid {
     gap: 20px;
   }
-  
   .pricing-card {
-    padding: 28px 20px;
+    width: 260px;
+    padding: 20px 18px;
   }
-  
   .plan-price .price {
-    font-size: 36px;
+    font-size: 34px;
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 850px) {
   .pricing-grid {
-    grid-template-columns: repeat(2, 1fr);
+    flex-wrap: wrap;
+    justify-content: center;
   }
-  
-  .upgrade-header h1 {
-    font-size: 36px;
+  .pricing-card {
+    width: 280px;
   }
-  
-  .faq-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 768px) {
   .upgrade-page {
     padding: 80px 20px 50px;
   }
-  
   .upgrade-header h1 {
-    font-size: 28px;
+    font-size: 32px;
   }
-  
-  .upgrade-badge {
-    font-size: 12px;
-    padding: 6px 18px;
+}
+
+@media (max-width: 680px) {
+  .pricing-card {
+    width: 100%;
+    max-width: 320px;
   }
-  
-  .upgrade-subtitle {
-    font-size: 14px;
-  }
-  
-  .pricing-grid {
-    grid-template-columns: 1fr;
-    gap: 25px;
-  }
-  
   .pricing-card.popular {
     transform: scale(1);
   }
-  
   .trust-badges {
-    gap: 20px;
+    gap: 15px;
   }
-  
-  .trust-item span {
-    font-size: 16px;
-  }
-  
   .trust-item p {
-    font-size: 11px;
+    font-size: 10px;
   }
-  
-  .faq-section h3 {
-    font-size: 20px;
+  .upgrade-header h1 {
+    font-size: 28px;
   }
-  
-  .faq-item {
-    padding: 16px;
-  }
-  
-  .faq-item h4 {
-    font-size: 14px;
-  }
-  
-  .faq-item p {
-    font-size: 12px;
+  .upgrade-badge {
+    font-size: 10px;
+    padding: 5px 16px;
   }
 }
 
 @media (max-width: 480px) {
+  .upgrade-page {
+    padding: 70px 16px 40px;
+  }
   .plan-price .price {
-    font-size: 32px;
+    font-size: 30px;
   }
-  
   .feature-item {
-    font-size: 12px;
+    font-size: 11px;
   }
-  
   .trust-badges {
-    flex-wrap: wrap;
-    gap: 15px;
+    gap: 12px;
+  }
+  .trust-item span {
+    font-size: 14px;
+  }
+  .popular-badge, .most-sold-badge {
+    font-size: 9px;
+    padding: 3px 10px;
   }
 }
