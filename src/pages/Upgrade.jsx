@@ -8,6 +8,7 @@ export default function Upgrade() {
   const [currentPlan, setCurrentPlan] = useState("free");
   const [loading, setLoading] = useState(true);
   const [hoveredPlan, setHoveredPlan] = useState(null);
+  const [processing, setProcessing] = useState(false);
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -22,8 +23,17 @@ export default function Upgrade() {
         const data = await res.json();
         setUser(data);
         
-        const plan = localStorage.getItem("userPlan") || "free";
-        setCurrentPlan(plan);
+        // Check subscription status from backend
+        const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${userId}`);
+        const subData = await subRes.json();
+        
+        if (subData.isPro) {
+          setCurrentPlan(subData.planType || "pro");
+          localStorage.setItem("userPlan", subData.planType || "pro");
+        } else {
+          setCurrentPlan("free");
+          localStorage.setItem("userPlan", "free");
+        }
       } catch (err) {
         console.error("Error fetching user:", err);
       } finally {
@@ -45,6 +55,62 @@ export default function Upgrade() {
     { name: "Legend Badge", included: true, icon: "🏆" },
     { name: "VIP Support", included: true, icon: "💎" },
   ];
+
+  // Handle upgrade with Stripe
+  const handleUpgrade = async (planType, amount, period) => {
+    setProcessing(true);
+    
+    try {
+      const userId = localStorage.getItem("userId");
+      const userEmail = user?.email || "customer@example.com";
+      
+      const response = await fetch(`${process.env.REACT_APP_API_URL}/api/create-checkout-session`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          planId: planType,
+          userId: userId,
+          userEmail: userEmail,
+          planName: planType
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.url) {
+        // Redirect to Stripe Checkout page
+        window.location.href = data.url;
+      } else {
+        alert("Something went wrong. Please try again.");
+        setProcessing(false);
+      }
+    } catch (err) {
+      console.error("Payment error:", err);
+      alert("Payment error. Please try again.");
+      setProcessing(false);
+    }
+  };
+
+  // Calculate savings percentage
+  const getSavingsBadge = (plan) => {
+    if (plan.id === "semi") {
+      return (
+        <div className="savings-badge">
+          <span>🔥</span> Save 40%
+        </div>
+      );
+    }
+    if (plan.id === "lifetime") {
+      return (
+        <div className="savings-badge lifetime">
+          <span>⭐</span> Best Value
+        </div>
+      );
+    }
+    return null;
+  };
 
   const plans = [
     {
@@ -80,7 +146,7 @@ export default function Upgrade() {
       mostSold: false,
       tag: "",
       features: proFeatures,
-      buttonText: "Start Pro",
+      buttonText: processing ? "Processing..." : "Start Pro",
       buttonAction: () => handleUpgrade("monthly", 3, "month"),
       color: "#00e5ff",
       savings: ""
@@ -95,7 +161,7 @@ export default function Upgrade() {
       mostSold: true,
       tag: "🔥 MOST POPULAR",
       features: proFeatures,
-      buttonText: "Save 40% →",
+      buttonText: processing ? "Processing..." : "Save 40% →",
       buttonAction: () => handleUpgrade("semi", 18, "6 months"),
       color: "#a855f7",
       savings: "Save $18 vs monthly"
@@ -110,37 +176,12 @@ export default function Upgrade() {
       mostSold: false,
       tag: "⭐ BEST DEAL",
       features: proFeatures,
-      buttonText: "Go Legend →",
+      buttonText: processing ? "Processing..." : "Go Legend →",
       buttonAction: () => handleUpgrade("lifetime", 30, "lifetime"),
       color: "#ffd84d",
       savings: "Pay once, use forever"
     }
   ];
-
-  const handleUpgrade = (planType, amount, period) => {
-    localStorage.setItem("selectedPlan", planType);
-    localStorage.setItem("selectedAmount", amount);
-    alert(`✨ Upgrade to ${planType} plan - $${amount}\n\nPayment integration coming soon!\nYou'll get unlimited quests, full analytics, and all pro features!`);
-  };
-
-  // Calculate savings percentage
-  const getSavingsBadge = (plan) => {
-    if (plan.id === "semi") {
-      return (
-        <div className="savings-badge">
-          <span>🔥</span> Save 40%
-        </div>
-      );
-    }
-    if (plan.id === "lifetime") {
-      return (
-        <div className="savings-badge lifetime">
-          <span>⭐</span> Best Value
-        </div>
-      );
-    }
-    return null;
-  };
 
   if (loading) {
     return (
@@ -162,6 +203,13 @@ export default function Upgrade() {
             Start free. Upgrade for unlimited quests, analytics, and exclusive character skins.
           </p>
         </div>
+
+        {/* Current Plan Indicator */}
+        {currentPlan !== "free" && (
+          <div className="current-plan-banner">
+            <span>⭐ You are currently on the <strong>{currentPlan.toUpperCase()}</strong> plan</span>
+          </div>
+        )}
 
         {/* Pricing Cards - Centered Layout */}
         <div className="pricing-grid">
@@ -221,7 +269,7 @@ export default function Upgrade() {
               <button 
                 className={`plan-button ${plan.popular ? "popular-btn" : ""} ${currentPlan === plan.id ? "current-btn" : ""}`}
                 onClick={plan.buttonAction}
-                disabled={currentPlan === plan.id}
+                disabled={currentPlan === plan.id || processing}
               >
                 {currentPlan === plan.id ? "✓ CURRENT PLAN" : plan.buttonText}
               </button>
