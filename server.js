@@ -6,6 +6,8 @@ const bcrypt = require("bcrypt");
 const session = require("express-session");
 const passport = require("passport");
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const Stripe = require('stripe');
+const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
 const app = express();
 
@@ -296,6 +298,80 @@ app.post("/login", async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+// ====================== STRIPE PAYMENT INTEGRATION ======================
+
+// Create checkout session
+app.post("/api/create-checkout-session", async (req, res) => {
+  try {
+    const { planId, userId, userEmail, planName } = req.body;
+    
+    // Map planId to Price ID
+    const priceIds = {
+      monthly: process.env.STRIPE_MONTHLY_PRICE_ID,
+      semi: process.env.STRIPE_SEMI_PRICE_ID,
+      lifetime: process.env.STRIPE_LIFETIME_PRICE_ID
+    };
+    
+    const priceId = priceIds[planId];
+    if (!priceId) {
+      return res.status(400).json({ error: "Invalid plan selected" });
+    }
+    
+    const sessionConfig = {
+      payment_method_types: ['card'],
+      customer_email: userEmail,
+      client_reference_id: userId,
+      mode: planId === 'lifetime' ? 'payment' : 'subscription',
+      success_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/payment-success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/upgrade?canceled=true`,
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        userId: userId,
+        planId: planId
+      }
+    };
+    
+    const session = await stripe.checkout.sessions.create(sessionConfig);
+    res.json({ sessionId: session.id, url: session.url });
+    
+  } catch (error) {
+    console.error("Stripe error:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Check user subscription status
+app.get("/api/check-subscription/:userId", async (req, res) => {
+  try {
+    const result = await query(
+      "SELECT subscription_status, subscription_end_date, plan_type FROM users WHERE id = $1",
+      [req.params.userId]
+    );
+    
+    if (result.rows.length > 0) {
+      const user = result.rows[0];
+      const isActive = user.subscription_status !== 'free' && 
+                      (user.subscription_end_date === null || new Date(user.subscription_end_date) > new Date());
+      
+      res.json({
+        isPro: isActive,
+        plan: user.subscription_status || 'free',
+        planType: user.plan_type || 'free',
+        expiresAt: user.subscription_end_date
+      });
+    } else {
+      res.json({ isPro: false, plan: 'free' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
