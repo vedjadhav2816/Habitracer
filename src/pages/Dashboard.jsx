@@ -11,7 +11,6 @@ import {
 import CreateQuestModal from "../components/CreateQuestModal";
 import Analytics from "./Analytics"; // Import the Analytics component
 import Upgrade from "./Upgrade";
-const [isPro, setIsPro] = useState(false);
 
 // Move ProfilePage outside Dashboard component to prevent re-renders
 const ProfilePage = memo(({ 
@@ -188,6 +187,7 @@ export default function Dashboard() {
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState("quests");
   const [isLoading, setIsLoading] = useState(true);
+  const [isPro, setIsPro] = useState(false);
 
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState({
@@ -233,6 +233,30 @@ export default function Dashboard() {
     { id: "champion", name: "CHAMPION", icon: "👑", condition: () => stats.xp >= 1000 },
     { id: "legend", name: "LEGEND", icon: "🌟", condition: () => stats.xp >= 2000 },
   ];
+
+  // 🔥 CHECK SUBSCRIPTION STATUS ON LOAD
+  useEffect(() => {
+    const checkSubscription = async () => {
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        try {
+          const res = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${userId}`);
+          const data = await res.json();
+          if (data.isPro) {
+            setIsPro(true);
+            localStorage.setItem("userPlan", data.planType || "pro");
+          } else {
+            setIsPro(false);
+            localStorage.setItem("userPlan", "free");
+          }
+        } catch (err) {
+          console.error("Error checking subscription:", err);
+        }
+      }
+    };
+    
+    checkSubscription();
+  }, []);
 
   // 🔥 SAVE ALL DATA TO DATABASE
   const saveAllDataToDB = useCallback(async (userId, questsData, statsData, characterData) => {
@@ -658,7 +682,9 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="lvl-badge">LVL {level}</div>
-          <div className="plan-pill free">FREE</div>
+          <div className={`plan-pill ${isPro ? "pro" : "free"}`}>
+            {isPro ? "PRO ⚡" : "FREE"}
+          </div>
           
           {loadingUser ? (
             <div className="av-hdr pulse-avatar">⚡</div>
@@ -701,9 +727,10 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               </div>
 
-             <button onClick={() => setShowModal(true)}>
-    + New Quest ({quests.length}/{isPro ? "∞" : "3"})
-  </button>
+              <div className="quests">
+                <button onClick={() => setShowModal(true)}>
+                  + New Quest ({quests.length}/{isPro ? "∞" : "3"})
+                </button>
 
                 {quests.length === 0 ? (
                   <div className="empty">
