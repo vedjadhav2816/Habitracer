@@ -11,6 +11,7 @@ import {
 import CreateQuestModal from "../components/CreateQuestModal";
 import Analytics from "./Analytics"; // Import the Analytics component
 import Upgrade from "./Upgrade";
+const [isPro, setIsPro] = useState(false);
 
 // Move ProfilePage outside Dashboard component to prevent re-renders
 const ProfilePage = memo(({ 
@@ -700,10 +701,9 @@ export default function Dashboard() {
                 </ResponsiveContainer>
               </div>
 
-              <div className="quests">
-                <button onClick={() => setShowModal(true)}>
-                  + New Quest ({quests.length}/3)
-                </button>
+             <button onClick={() => setShowModal(true)}>
+    + New Quest ({quests.length}/{isPro ? "∞" : "3"})
+  </button>
 
                 {quests.length === 0 ? (
                   <div className="empty">

@@ -64,10 +64,19 @@ export default function Analytics() {
         const userData = await userRes.json();
         setUser(userData);
         
-        // Check if user is PRO (from your database)
-        // For now, using localStorage or you can fetch from backend
-        const userPlan = localStorage.getItem("userPlan") || "free";
-        setIsPro(userPlan === "pro");
+        // ✅ CHECK SUBSCRIPTION FROM BACKEND (NOT LOCALSTORAGE)
+        const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${userId}`);
+        const subData = await subRes.json();
+        
+        const proStatus = subData.isPro === true;
+        setIsPro(proStatus);
+        
+        // Update localStorage to match backend
+        if (proStatus) {
+          localStorage.setItem("userPlan", subData.planType || "pro");
+        } else {
+          localStorage.setItem("userPlan", "free");
+        }
 
         const questsRes = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}/quests`);
         const questsData = await questsRes.json();
@@ -88,7 +97,6 @@ export default function Analytics() {
   // Calculate stats
   const totalQuests = quests.length;
   const totalCompletions = stats.xp ? Math.floor(stats.xp / 10) : 0;
-  const averageCompletion = weeklyData.reduce((sum, d) => sum + d.percentage, 0) / 7;
   const currentStreak = stats.streak || 0;
   const bestStreak = Math.max(stats.streak || 0, 5);
 
