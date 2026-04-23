@@ -14,42 +14,9 @@ export default function Analytics() {
   const [stats, setStats] = useState({});
   const [isPro, setIsPro] = useState(false);
   const [loading, setLoading] = useState(true);
-
-  // Sample data for charts (replace with real data from your backend)
-  const weeklyData = [
-    { day: "Mon", completed: 3, total: 5, percentage: 60 },
-    { day: "Tue", completed: 4, total: 5, percentage: 80 },
-    { day: "Wed", completed: 5, total: 5, percentage: 100 },
-    { day: "Thu", completed: 2, total: 5, percentage: 40 },
-    { day: "Fri", completed: 4, total: 5, percentage: 80 },
-    { day: "Sat", completed: 5, total: 5, percentage: 100 },
-    { day: "Sun", completed: 3, total: 5, percentage: 60 },
-  ];
-
-  const monthlyData = [
-    { week: "Week 1", completed: 18, total: 35, percentage: 51 },
-    { week: "Week 2", completed: 24, total: 35, percentage: 68 },
-    { week: "Week 3", completed: 28, total: 35, percentage: 80 },
-    { week: "Week 4", completed: 22, total: 35, percentage: 63 },
-  ];
-
-  const habitBreakdown = [
-    { name: "Morning Run", value: 85, color: "#00e5ff" },
-    { name: "Read Books", value: 60, color: "#a855f7" },
-    { name: "Drink Water", value: 95, color: "#22c55e" },
-    { name: "Meditation", value: 45, color: "#ffd84d" },
-    { name: "Exercise", value: 70, color: "#f97316" },
-  ];
-
-  const heatmapData = [
-    { day: "Mon", week1: 3, week2: 4, week3: 5, week4: 2 },
-    { day: "Tue", week1: 2, week2: 5, week3: 4, week4: 3 },
-    { day: "Wed", week1: 4, week2: 3, week3: 5, week4: 4 },
-    { day: "Thu", week1: 1, week2: 2, week3: 3, week4: 5 },
-    { day: "Fri", week1: 3, week2: 4, week3: 2, week4: 4 },
-    { day: "Sat", week1: 5, week2: 5, week3: 4, week4: 5 },
-    { day: "Sun", week1: 2, week2: 3, week3: 4, week4: 3 },
-  ];
+  const [weeklyData, setWeeklyData] = useState([]);
+  const [habitBreakdown, setHabitBreakdown] = useState([]);
+  const [heatmapData, setHeatmapData] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -64,14 +31,13 @@ export default function Analytics() {
         const userData = await userRes.json();
         setUser(userData);
         
-        // ✅ CHECK SUBSCRIPTION FROM BACKEND (NOT LOCALSTORAGE)
+        // Check subscription from backend
         const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${userId}`);
         const subData = await subRes.json();
         
         const proStatus = subData.isPro === true;
         setIsPro(proStatus);
         
-        // Update localStorage to match backend
         if (proStatus) {
           localStorage.setItem("userPlan", subData.planType || "pro");
         } else {
@@ -83,6 +49,9 @@ export default function Analytics() {
         if (questsData.success) {
           setQuests(questsData.quests || []);
           setStats(questsData.stats || {});
+          
+          // Generate real data from user's quests
+          generateRealAnalyticsData(questsData.quests || []);
         }
       } catch (err) {
         console.error("Error fetching analytics data:", err);
@@ -94,11 +63,97 @@ export default function Analytics() {
     fetchData();
   }, [navigate]);
 
-  // Calculate stats
+  // Generate real analytics data from user's quests
+  const generateRealAnalyticsData = (userQuests) => {
+    // Weekly data - last 7 days
+    const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const today = new Date();
+    const weekData = [];
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(today.getDate() - i);
+      const dateStr = date.toISOString().split("T")[0];
+      
+      let completedCount = 0;
+      userQuests.forEach(quest => {
+        if (quest.logs?.includes(dateStr)) {
+          completedCount++;
+        }
+      });
+      
+      const total = userQuests.length || 1;
+      const percentage = Math.round((completedCount / total) * 100);
+      
+      weekData.push({
+        day: weekDays[6 - i],
+        completed: completedCount,
+        total: total,
+        percentage: percentage
+      });
+    }
+    setWeeklyData(weekData);
+    
+    // Habit breakdown - completion rates per quest
+    const breakdown = [];
+    userQuests.forEach(quest => {
+      const completionCount = quest.logs?.length || 0;
+      const maxDays = quest.days || 30;
+      const percentage = Math.min(100, Math.round((completionCount / maxDays) * 100));
+      
+      const colors = ["#00e5ff", "#a855f7", "#22c55e", "#ffd84d", "#f97316", "#ef4444", "#06b6d4", "#ec4899"];
+      const colorIndex = breakdown.length % colors.length;
+      
+      breakdown.push({
+        name: quest.name,
+        value: percentage,
+        color: colors[colorIndex]
+      });
+    });
+    setHabitBreakdown(breakdown);
+    
+    // Heatmap data - last 4 weeks
+    const heatmap = [];
+    const weekNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    
+    for (let week = 0; week < 4; week++) {
+      for (let day = 0; day < 7; day++) {
+        const date = new Date(today);
+        date.setDate(today.getDate() - (week * 7 + (6 - day)));
+        const dateStr = date.toISOString().split("T")[0];
+        
+        let completedCount = 0;
+        userQuests.forEach(quest => {
+          if (quest.logs?.includes(dateStr)) {
+            completedCount++;
+          }
+        });
+        
+        if (week === 0) {
+          heatmap.push({
+            day: weekNames[day],
+            week1: completedCount,
+            week2: 0,
+            week3: 0,
+            week4: 0
+          });
+        } else if (week === 1) {
+          heatmap[day].week2 = completedCount;
+        } else if (week === 2) {
+          heatmap[day].week3 = completedCount;
+        } else if (week === 3) {
+          heatmap[day].week4 = completedCount;
+        }
+      }
+    }
+    setHeatmapData(heatmap);
+  };
+
+  // Calculate stats from real data
   const totalQuests = quests.length;
   const totalCompletions = stats.xp ? Math.floor(stats.xp / 10) : 0;
   const currentStreak = stats.streak || 0;
-  const bestStreak = Math.max(stats.streak || 0, 5);
+  const bestStreak = stats.streak || 0;
 
   // Pro feature lock overlay
   if (!isPro && !loading) {
@@ -133,6 +188,28 @@ export default function Analytics() {
       <div className="analytics-loading">
         <div className="loading-spinner">📊</div>
         <p>Loading your analytics...</p>
+      </div>
+    );
+  }
+
+  // If no quests, show empty state
+  if (totalQuests === 0) {
+    return (
+      <div className="analytics-page">
+        <div className="analytics-container">
+          <div className="analytics-header">
+            <h1>📊 Analytics Dashboard</h1>
+            <p>Complete some quests to see your analytics!</p>
+          </div>
+          <div className="empty-state-analytics">
+            <div className="empty-icon">🗺️</div>
+            <h3>No Data Yet</h3>
+            <p>Start creating and completing quests to see your progress charts here.</p>
+            <button className="create-quest-btn" onClick={() => navigate("/dashboard")}>
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
@@ -178,7 +255,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Weekly Progress Chart */}
+        {/* Weekly Progress Chart - Real Data */}
         <div className="chart-card">
           <div className="chart-header">
             <h3>📈 Weekly Progress</h3>
@@ -198,32 +275,14 @@ export default function Analytics() {
           </ResponsiveContainer>
         </div>
 
-        {/* Monthly Progress & Habit Breakdown */}
-        <div className="two-columns">
-          <div className="chart-card">
-            <div className="chart-header">
-              <h3>📅 Monthly Overview</h3>
-              <span>Last 4 weeks</span>
-            </div>
-            <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={monthlyData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2a4a" />
-                <XAxis dataKey="week" stroke="#94a3b8" />
-                <YAxis stroke="#94a3b8" />
-                <Tooltip
-                  contentStyle={{ backgroundColor: "#161e30", border: "1px solid #a855f7", borderRadius: "8px" }}
-                />
-                <Bar dataKey="percentage" fill="#a855f7" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+        {/* Habit Breakdown - Real Data */}
+        <div className="chart-card">
+          <div className="chart-header">
+            <h3>🥧 Habit Breakdown</h3>
+            <span>Completion rates</span>
           </div>
-
-          <div className="chart-card">
-            <div className="chart-header">
-              <h3>🥧 Habit Breakdown</h3>
-              <span>Completion rates</span>
-            </div>
-            <ResponsiveContainer width="100%" height={250}>
+          {habitBreakdown.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
               <PieChart>
                 <Pie
                   data={habitBreakdown}
@@ -246,7 +305,9 @@ export default function Analytics() {
                 <Legend />
               </PieChart>
             </ResponsiveContainer>
-          </div>
+          ) : (
+            <div className="empty-chart">Complete quests to see breakdown</div>
+          )}
         </div>
 
         {/* Activity Heatmap */}
@@ -270,10 +331,10 @@ export default function Analytics() {
                 {heatmapData.map((row) => (
                   <tr key={row.day}>
                     <td className="heatmap-day">{row.day}</td>
-                    <td className={`heatmap-cell level-${row.week1}`}>{row.week1}</td>
-                    <td className={`heatmap-cell level-${row.week2}`}>{row.week2}</td>
-                    <td className={`heatmap-cell level-${row.week3}`}>{row.week3}</td>
-                    <td className={`heatmap-cell level-${row.week4}`}>{row.week4}</td>
+                    <td className={`heatmap-cell level-${Math.min(5, row.week1)}`}>{row.week1}</td>
+                    <td className={`heatmap-cell level-${Math.min(5, row.week2)}`}>{row.week2}</td>
+                    <td className={`heatmap-cell level-${Math.min(5, row.week3)}`}>{row.week3}</td>
+                    <td className={`heatmap-cell level-${Math.min(5, row.week4)}`}>{row.week4}</td>
                   </tr>
                 ))}
               </tbody>
