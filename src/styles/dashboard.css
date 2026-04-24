@@ -173,7 +173,7 @@ body {
 .card h4 { font-family: "Orbitron", monospace; font-size: 0.6rem; letter-spacing: 0.12em; color: #94a3b8; margin-bottom: 6px; }
 .card h2 { font-family: "Orbitron", monospace; font-size: 1.4rem; font-weight: 700; color: var(--c); margin: 0; line-height: 1; }
 
-/* ── CIRCLES (Mobile First) ─────────────────── */
+/* ── CIRCLES (Fixed - Full Circle visible) ─── */
 .circles {
   display: flex;
   flex-wrap: wrap;
@@ -181,7 +181,7 @@ body {
   justify-content: space-between;
   background: #0d1120;
   border-radius: 16px;
-  padding: 16px;
+  padding: 20px;
   border: 1px solid #252f4a;
 }
 
@@ -191,19 +191,45 @@ body {
   justify-content: center;
   align-items: center;
   flex: 1;
-  min-width: 80px;
+  min-width: 100px;
 }
 
-.circle-box svg { width: 80px; height: 80px; }
-.circle-text { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; font-family: "Orbitron", monospace; font-weight: 700; font-size: 0.9rem; color: white; display: flex; flex-direction: column; align-items: center; }
-.circle-text span { font-size: 0.55rem; color: #94a3b8; margin-top: 2px; }
+.circle-box svg {
+  width: 100px;
+  height: 100px;
+  display: block;
+}
 
-/* ── ACTIVITY GRAPH ──────────────────────────── */
+.circle-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-family: "Orbitron", monospace;
+  font-weight: 700;
+  font-size: 1rem;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.circle-text span {
+  font-size: 0.55rem;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* Fix for circle stroke to be fully visible */
+.circle-box svg circle {
+  stroke-width: 6;
+}
+
+/* ── ACTIVITY GRAPH (Removed - no empty rectangle) ── */
 .activity {
-  background: #161e30;
-  border: 1px solid #252f4a;
-  border-radius: 14px;
-  padding: 12px;
+  display: none;
 }
 
 /* ── QUESTS SECTION ─────────────────────────── */
@@ -218,33 +244,75 @@ body {
   width: 100%;
   background: linear-gradient(135deg, #00b8d9, #00e5ff);
   border: none;
-  padding: 10px;
+  padding: 12px;
   border-radius: 10px;
   font-family: "Rajdhani", sans-serif;
   font-weight: 700;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: #07090f;
   cursor: pointer;
   margin-bottom: 16px;
   letter-spacing: 0.08em;
+  word-break: keep-all;
+  white-space: normal;
 }
 
 .quest-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 12px;
+  padding: 12px;
   margin-top: 8px;
   background: #161e30;
   border: 1px solid #252f4a;
   border-radius: 10px;
+  gap: 8px;
 }
 
-.quest-info { display: flex; gap: 10px; align-items: center; flex: 1; }
-.quest-icon { font-size: 1.3rem; background: #0d1120; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 10px; border: 1px solid #2e3d62; }
-.quest-name { font-family: "Rajdhani", sans-serif; font-weight: 600; font-size: 0.85rem; color: #e2e8f0; }
+.quest-info {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+}
 
-.complete-btn { width: 36px; height: 36px; border-radius: 50%; background: #0d1120; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid #2e3d62; }
+.quest-icon {
+  font-size: 1.3rem;
+  background: #0d1120;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid #2e3d62;
+  flex-shrink: 0;
+}
+
+.quest-name {
+  font-family: "Rajdhani", sans-serif;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+  word-break: break-word;
+  overflow-wrap: break-word;
+  flex: 1;
+}
+
+.complete-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #0d1120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 1px solid #2e3d62;
+  flex-shrink: 0;
+}
+
 .complete-btn.done { border-color: #22c55e; background: rgba(34, 197, 94, 0.1); }
 .complete-btn .circle { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #2e3d62; display: flex; align-items: center; justify-content: center; position: relative; }
 .complete-btn.done .circle { border-color: #22c55e; }
@@ -805,7 +873,7 @@ body {
   .card { padding: 16px 20px; }
   .card h2 { font-size: 1.8rem; }
   .circles { flex-wrap: nowrap; padding: 20px; }
-  .circle-box svg { width: 90px; height: 90px; }
+  .circle-box svg { width: 110px; height: 110px; }
   .circle-text { font-size: 1rem; }
   .circle-text span { font-size: 0.6rem; }
   .right { flex: 1.2; }
@@ -858,6 +926,22 @@ body {
   .xp-track { width: 50px; }
   .lvl-badge, .plan-pill { font-size: 0.55rem; padding: 2px 6px; }
   .av-hdr { width: 28px; height: 28px; font-size: 0.8rem; }
+  
+  /* Fix circles on mobile */
+  .circles {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+  }
+  
+  .circle-box {
+    min-width: 90px;
+  }
+  
+  .circle-box svg {
+    width: 85px;
+    height: 85px;
+  }
 }
 
 /* Small Mobile (under 480px) */
@@ -867,6 +951,12 @@ body {
   .card { padding: 10px 12px; }
   .card h2 { font-size: 1.2rem; }
   .card h4 { font-size: 0.55rem; }
+  
+  .circle-box svg {
+    width: 75px;
+    height: 75px;
+  }
+  
   .quest-icon { width: 32px; height: 32px; font-size: 1rem; }
   .quest-name { font-size: 0.75rem; }
   .complete-btn { width: 30px; height: 30px; }
@@ -879,6 +969,14 @@ body {
   .profile-avatar { width: 80px; height: 80px; font-size: 48px; }
   .profile-name { font-size: 1.2rem; }
   .achievements-grid { grid-template-columns: repeat(2, 1fr); }
+  
+  /* Fix quest button text on very small screens */
+  .quests > button {
+    font-size: 0.75rem;
+    padding: 10px;
+    white-space: normal;
+    word-break: break-word;
+  }
 }
 
 /* Landscape Mode */
@@ -888,4 +986,5 @@ body {
   .main { padding: 12px; gap: 12px; }
   .stats { grid-template-columns: repeat(2, 1fr); }
   .hdr-r { order: initial; width: auto; margin-top: 0; }
+  .circles { flex-wrap: wrap; }
 }
