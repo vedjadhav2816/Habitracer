@@ -9,7 +9,7 @@ import {
 } from "recharts";
 
 import CreateQuestModal from "../components/CreateQuestModal";
-import Analytics from "./Analytics"; // Import the Analytics component
+import Analytics from "./Analytics";
 import Upgrade from "./Upgrade";
 
 // Move ProfilePage outside Dashboard component to prevent re-renders
@@ -188,6 +188,7 @@ export default function Dashboard() {
   const [activeTab, setActiveTab] = useState("quests");
   const [isLoading, setIsLoading] = useState(true);
   const [isPro, setIsPro] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const [user, setUser] = useState(null);
   const [userProfile, setUserProfile] = useState({
@@ -456,6 +457,11 @@ export default function Dashboard() {
     }
   }, [quests, stats, character, saveAllDataToDB, navigate]);
 
+  // Toggle menu for mobile
+  const toggleMenu = () => {
+    setMenuOpen(!menuOpen);
+  };
+
   // 🔥 ICON → STAT
   const iconStatsMap = {
     "🏃": "strength",
@@ -643,32 +649,36 @@ export default function Dashboard() {
   return (
     <div className="dashboard">
 
-      {/* 🔥 NAVBAR MATCHING PNG DESIGN */}
+      {/* 🔥 NAVBAR WITH HAMBURGER MENU */}
       <div className="topbar">
         <div className="logo">HABIT<span>RACER</span></div>
 
-        <div className="nav-tabs">
+        <button className="menu-toggle" onClick={toggleMenu}>
+          ☰
+        </button>
+
+        <div className={`nav-tabs ${menuOpen ? "open" : ""}`}>
           <button 
             className={`nav-tab ${activeTab === "quests" ? "active" : ""}`}
-            onClick={() => setActiveTab("quests")}
+            onClick={() => { setActiveTab("quests"); setMenuOpen(false); }}
           >
             ⚔️ QUESTS
           </button>
           <button 
             className={`nav-tab ${activeTab === "analytics" ? "active" : ""}`}
-            onClick={() => setActiveTab("analytics")}
+            onClick={() => { setActiveTab("analytics"); setMenuOpen(false); }}
           >
             📊 ANALYTICS
           </button>
           <button 
             className={`nav-tab ${activeTab === "profile" ? "active" : ""}`}
-            onClick={() => setActiveTab("profile")}
+            onClick={() => { setActiveTab("profile"); setMenuOpen(false); }}
           >
             👤 PROFILE
           </button>
           <button 
             className={`nav-tab ${activeTab === "upgrade" ? "active" : ""}`}
-            onClick={() => setActiveTab("upgrade")}
+            onClick={() => { setActiveTab("upgrade"); setMenuOpen(false); }}
           >
             ⚡ UPGRADE
           </button>
@@ -689,11 +699,11 @@ export default function Dashboard() {
           {loadingUser ? (
             <div className="av-hdr pulse-avatar">⚡</div>
           ) : user ? (
-            <div className="av-hdr" onClick={() => setActiveTab("profile")}>
+            <div className="av-hdr" onClick={() => { setActiveTab("profile"); setMenuOpen(false); }}>
               {userProfile.avatar || user.name?.charAt(0).toUpperCase() || "U"}
             </div>
           ) : (
-            <div className="av-hdr" onClick={() => setActiveTab("profile")}>👤</div>
+            <div className="av-hdr" onClick={() => { setActiveTab("profile"); setMenuOpen(false); }}>👤</div>
           )}
           
           <button className="btn-logout" onClick={handleLogout}>LOGOUT</button>
@@ -829,7 +839,6 @@ export default function Dashboard() {
           />
         )}
         
-        {/* REPLACED THE PLACEHOLDER WITH ACTUAL ANALYTICS COMPONENT */}
         {activeTab === "analytics" && <Analytics />}
         
         {activeTab === "upgrade" && <Upgrade />}
