@@ -173,7 +173,7 @@ body {
 .card h4 { font-family: "Orbitron", monospace; font-size: 0.6rem; letter-spacing: 0.12em; color: #94a3b8; margin-bottom: 6px; }
 .card h2 { font-family: "Orbitron", monospace; font-size: 1.4rem; font-weight: 700; color: var(--c); margin: 0; line-height: 1; }
 
-/* ── CIRCLES (Fixed - Full Circle visible on all devices) ─── */
+/* ── CIRCLES (Fully Fixed - Shows both text and progress ring) ─── */
 .circles {
   display: flex;
   flex-wrap: wrap;
@@ -195,8 +195,9 @@ body {
 }
 
 .circle-box svg {
-  width: 80px;
-  height: 80px;
+  width: 100%;
+  height: auto;
+  max-width: 90px;
   display: block;
 }
 
@@ -222,12 +223,12 @@ body {
   margin-top: 2px;
 }
 
-/* Fix for circle stroke to be fully visible */
-.circle-box svg circle {
-  stroke-width: 5;
+/* Circle animation for progress */
+.circle-anim {
+  transition: stroke-dashoffset 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ── ACTIVITY GRAPH (Removed - no empty rectangle) ── */
+/* ── ACTIVITY GRAPH (Removed) ── */
 .activity {
   display: none;
 }
@@ -873,13 +874,12 @@ body {
   .card { padding: 16px 20px; }
   .card h2 { font-size: 1.8rem; }
   
-  /* Desktop circles - slightly larger */
+  /* Desktop circles */
   .circles { flex-wrap: nowrap; padding: 20px; gap: 24px; }
   .circle-box { min-width: 90px; }
-  .circle-box svg { width: 90px; height: 90px; }
+  .circle-box svg { max-width: 90px; }
   .circle-text { font-size: 0.9rem; }
   .circle-text span { font-size: 0.55rem; }
-  .circle-box svg circle { stroke-width: 5; }
   
   .right { flex: 1.2; }
   .character { padding: 20px; }
@@ -932,7 +932,7 @@ body {
   .lvl-badge, .plan-pill { font-size: 0.55rem; padding: 2px 6px; }
   .av-hdr { width: 28px; height: 28px; font-size: 0.8rem; }
   
-  /* Fix circles on mobile - FULL CIRCLE VISIBLE */
+  /* Mobile circles */
   .circles {
     flex-wrap: wrap;
     justify-content: center;
@@ -946,8 +946,7 @@ body {
   }
   
   .circle-box svg {
-    width: 70px;
-    height: 70px;
+    max-width: 70px;
   }
   
   .circle-text {
@@ -956,10 +955,6 @@ body {
   
   .circle-text span {
     font-size: 0.45rem;
-  }
-  
-  .circle-box svg circle {
-    stroke-width: 4;
   }
 }
 
@@ -971,7 +966,7 @@ body {
   .card h2 { font-size: 1.2rem; }
   .card h4 { font-size: 0.55rem; }
   
-  /* Fix circles on small mobile - FULL CIRCLE VISIBLE */
+  /* Small mobile circles */
   .circles {
     gap: 12px;
     padding: 12px;
@@ -983,8 +978,7 @@ body {
   }
   
   .circle-box svg {
-    width: 60px;
-    height: 60px;
+    max-width: 60px;
   }
   
   .circle-text {
@@ -993,10 +987,6 @@ body {
   
   .circle-text span {
     font-size: 0.4rem;
-  }
-  
-  .circle-box svg circle {
-    stroke-width: 3.5;
   }
   
   .quest-icon { width: 32px; height: 32px; font-size: 1rem; }
@@ -1012,7 +1002,6 @@ body {
   .profile-name { font-size: 1.2rem; }
   .achievements-grid { grid-template-columns: repeat(2, 1fr); }
   
-  /* Fix quest button text on very small screens */
   .quests > button {
     font-size: 0.75rem;
     padding: 10px;
@@ -1029,10 +1018,9 @@ body {
   .stats { grid-template-columns: repeat(2, 1fr); }
   .hdr-r { order: initial; width: auto; margin-top: 0; }
   
-  /* Landscape mode circles */
+  /* Landscape circles */
   .circles { flex-wrap: wrap; gap: 12px; }
   .circle-box { min-width: 65px; }
-  .circle-box svg { width: 65px; height: 65px; }
+  .circle-box svg { max-width: 65px; }
   .circle-text { font-size: 0.65rem; }
-  .circle-box svg circle { stroke-width: 4; }
 }
