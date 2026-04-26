@@ -173,12 +173,13 @@ body {
 .card h4 { font-family: "Orbitron", monospace; font-size: 0.6rem; letter-spacing: 0.12em; color: #94a3b8; margin-bottom: 6px; }
 .card h2 { font-family: "Orbitron", monospace; font-size: 1.4rem; font-weight: 700; color: var(--c); margin: 0; line-height: 1; }
 
-/* ── CIRCLES - FULLY FIXED ─── */
+/* ── CIRCLES - PERFECTLY CENTERED FOR ALL SCREENS ─── */
 .circles {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
-  justify-content: space-between;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
   background: #0d1120;
   border-radius: 16px;
   padding: 20px;
@@ -191,18 +192,19 @@ body {
   justify-content: center;
   align-items: center;
   flex: 1;
-  min-width: 100px;
+  min-width: 85px;
+  max-width: 100px;
 }
 
 .circle-box svg {
-  width: 100px;
-  height: 100px;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1/1;
   display: block;
-  overflow: visible;
 }
 
 .circle-box svg circle {
-  stroke-width: 6;
+  stroke-width: 5;
 }
 
 .circle-text {
@@ -213,17 +215,18 @@ body {
   text-align: center;
   font-family: "Orbitron", monospace;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: white;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
   pointer-events: none;
+  line-height: 1.2;
 }
 
 .circle-text span {
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   color: #94a3b8;
   margin-top: 2px;
 }
@@ -880,11 +883,11 @@ body {
   .card h2 { font-size: 1.8rem; }
   
   /* Desktop circles */
-  .circles { flex-wrap: nowrap; padding: 20px; gap: 24px; }
-  .circle-box { min-width: 100px; }
-  .circle-box svg { width: 100px; height: 100px; }
+  .circles { flex-wrap: nowrap; gap: 24px; }
+  .circle-box { min-width: 100px; max-width: 100px; }
   .circle-text { font-size: 1rem; }
   .circle-text span { font-size: 0.55rem; }
+  .circle-box svg circle { stroke-width: 6; }
   
   .right { flex: 1.2; }
   .character { padding: 20px; }
@@ -899,8 +902,9 @@ body {
   .main { max-width: 1400px; }
   .stats { gap: 20px; }
   .card h2 { font-size: 2rem; }
-  .circle-box svg { width: 110px; height: 110px; }
+  .circle-box { min-width: 110px; max-width: 110px; }
   .circle-text { font-size: 1.1rem; }
+  .circle-box svg circle { stroke-width: 6; }
 }
 
 /* Mobile Menu Styles (below 768px) */
@@ -939,30 +943,30 @@ body {
   .lvl-badge, .plan-pill { font-size: 0.55rem; padding: 2px 6px; }
   .av-hdr { width: 28px; height: 28px; font-size: 0.8rem; }
   
-  /* Mobile circles */
+  /* Mobile circles - perfectly centered */
   .circles {
     flex-wrap: wrap;
     justify-content: center;
-    gap: 20px;
-    padding: 20px;
+    gap: 16px;
+    padding: 16px;
   }
   
   .circle-box {
-    min-width: 90px;
+    min-width: 80px;
+    max-width: 80px;
     flex: 0 1 auto;
   }
   
-  .circle-box svg {
-    width: 90px;
-    height: 90px;
-  }
-  
   .circle-text {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
   
   .circle-text span {
-    font-size: 0.5rem;
+    font-size: 0.45rem;
+  }
+  
+  .circle-box svg circle {
+    stroke-width: 4;
   }
 }
 
@@ -976,29 +980,25 @@ body {
   
   /* Small mobile circles */
   .circles {
-    gap: 15px;
-    padding: 15px;
+    gap: 12px;
+    padding: 12px;
   }
   
   .circle-box {
-    min-width: 75px;
-  }
-  
-  .circle-box svg {
-    width: 75px;
-    height: 75px;
+    min-width: 70px;
+    max-width: 70px;
   }
   
   .circle-text {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
   
   .circle-text span {
-    font-size: 0.45rem;
+    font-size: 0.4rem;
   }
   
   .circle-box svg circle {
-    stroke-width: 5;
+    stroke-width: 3.5;
   }
   
   .quest-icon { width: 32px; height: 32px; font-size: 1rem; }
@@ -1031,8 +1031,7 @@ body {
   .hdr-r { order: initial; width: auto; margin-top: 0; }
   
   /* Landscape circles */
-  .circles { flex-wrap: wrap; gap: 15px; }
-  .circle-box { min-width: 80px; }
-  .circle-box svg { width: 80px; height: 80px; }
-  .circle-text { font-size: 0.8rem; }
+  .circles { flex-wrap: wrap; gap: 12px; }
+  .circle-box { min-width: 70px; max-width: 70px; }
+  .circle-text { font-size: 0.7rem; }
 }
