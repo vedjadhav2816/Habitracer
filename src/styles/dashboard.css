@@ -177,11 +177,11 @@ body {
 .circles {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
-  justify-content: center;
+  gap: 16px;
+  justify-content: space-between;
   background: #0d1120;
   border-radius: 16px;
-  padding: 24px 20px;
+  padding: 20px;
   border: 1px solid #252f4a;
 }
 
@@ -191,13 +191,12 @@ body {
   justify-content: center;
   align-items: center;
   flex: 1;
-  min-width: 100px;
+  min-width: 80px;
 }
 
 .circle-box svg {
-  width: 100%;
-  height: auto;
-  max-width: 100px;
+  width: 80px;
+  height: 80px;
   display: block;
 }
 
@@ -209,17 +208,16 @@ body {
   text-align: center;
   font-family: "Orbitron", monospace;
   font-weight: 700;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
   color: white;
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  white-space: nowrap;
 }
 
 .circle-text span {
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   color: #94a3b8;
   margin-top: 2px;
 }
@@ -227,8 +225,6 @@ body {
 /* Fix for circle stroke to be fully visible */
 .circle-box svg circle {
   stroke-width: 5;
-  transform-origin: center;
-  transform: rotate(-90deg);
 }
 
 /* ── ACTIVITY GRAPH (Removed - no empty rectangle) ── */
@@ -879,10 +875,11 @@ body {
   
   /* Desktop circles - slightly larger */
   .circles { flex-wrap: nowrap; padding: 20px; gap: 24px; }
-  .circle-box { min-width: 110px; }
-  .circle-box svg { max-width: 100px; }
-  .circle-text { font-size: 0.95rem; }
-  .circle-text span { font-size: 0.6rem; }
+  .circle-box { min-width: 90px; }
+  .circle-box svg { width: 90px; height: 90px; }
+  .circle-text { font-size: 0.9rem; }
+  .circle-text span { font-size: 0.55rem; }
+  .circle-box svg circle { stroke-width: 5; }
   
   .right { flex: 1.2; }
   .character { padding: 20px; }
@@ -944,21 +941,25 @@ body {
   }
   
   .circle-box {
-    min-width: 85px;
+    min-width: 70px;
     flex: 0 1 auto;
   }
   
   .circle-box svg {
-    width: 75px;
-    height: 75px;
+    width: 70px;
+    height: 70px;
   }
   
   .circle-text {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
   }
   
   .circle-text span {
-    font-size: 0.5rem;
+    font-size: 0.45rem;
+  }
+  
+  .circle-box svg circle {
+    stroke-width: 4;
   }
 }
 
@@ -978,7 +979,7 @@ body {
   }
   
   .circle-box {
-    min-width: 70px;
+    min-width: 60px;
   }
   
   .circle-box svg {
@@ -987,11 +988,15 @@ body {
   }
   
   .circle-text {
-    font-size: 0.65rem;
+    font-size: 0.6rem;
   }
   
   .circle-text span {
-    font-size: 0.45rem;
+    font-size: 0.4rem;
+  }
+  
+  .circle-box svg circle {
+    stroke-width: 3.5;
   }
   
   .quest-icon { width: 32px; height: 32px; font-size: 1rem; }
@@ -1026,7 +1031,8 @@ body {
   
   /* Landscape mode circles */
   .circles { flex-wrap: wrap; gap: 12px; }
-  .circle-box { min-width: 75px; }
+  .circle-box { min-width: 65px; }
   .circle-box svg { width: 65px; height: 65px; }
-  .circle-text { font-size: 0.7rem; }
+  .circle-text { font-size: 0.65rem; }
+  .circle-box svg circle { stroke-width: 4; }
 }
