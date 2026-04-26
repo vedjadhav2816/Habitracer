@@ -600,7 +600,7 @@ export default function Dashboard() {
     });
   }, [quests, todayStr, iconStatsMap]);
 
-  // UI CIRCLE
+   // UI CIRCLE - FIXED FOR MOBILE
   const Circle = ({ percent, label, color }) => {
     const radius = 45;
     const normalized = 2 * Math.PI * radius;
@@ -608,8 +608,15 @@ export default function Dashboard() {
 
     return (
       <div className="circle-box glow">
-        <svg height="120" width="120">
-          <circle cx="60" cy="60" r={radius} stroke="#1a2035" strokeWidth="6" fill="transparent"/>
+        <svg height="120" width="120" viewBox="0 0 120 120">
+          <circle 
+            cx="60" 
+            cy="60" 
+            r={radius} 
+            stroke="#1a2035" 
+            strokeWidth="6" 
+            fill="transparent"
+          />
           <circle
             cx="60"
             cy="60"
@@ -630,7 +637,6 @@ export default function Dashboard() {
       </div>
     );
   };
-
   // Active days calculation
   const activeDays = Object.keys(quests.reduce((acc, q) => {
     q.logs?.forEach(log => acc[log] = true);
