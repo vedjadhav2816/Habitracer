@@ -173,13 +173,12 @@ body {
 .card h4 { font-family: "Orbitron", monospace; font-size: 0.6rem; letter-spacing: 0.12em; color: #94a3b8; margin-bottom: 6px; }
 .card h2 { font-family: "Orbitron", monospace; font-size: 1.4rem; font-weight: 700; color: var(--c); margin: 0; line-height: 1; }
 
-/* ── CIRCLES - COMPLETELY FIXED FOR MOBILE ─── */
+/* ── CIRCLES - PROPERLY ALIGNED FOR ALL SCREENS ─── */
 .circles {
   display: flex;
   flex-wrap: wrap;
-  justify-content: center;
+  justify-content: space-evenly;
   align-items: center;
-  gap: 20px;
   background: #0d1120;
   border-radius: 16px;
   padding: 20px;
@@ -191,13 +190,13 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  text-align: center;
 }
 
 .circle-box svg {
   width: 90px;
   height: 90px;
   display: block;
-  overflow: visible;
 }
 
 .circle-box svg circle {
@@ -212,7 +211,7 @@ body {
   text-align: center;
   font-family: "Orbitron", monospace;
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.9rem;
   color: white;
   display: flex;
   flex-direction: column;
@@ -880,7 +879,7 @@ body {
   .card h2 { font-size: 1.8rem; }
   
   /* Desktop circles */
-  .circles { flex-wrap: nowrap; gap: 24px; }
+  .circles { flex-wrap: nowrap; justify-content: space-between; }
   .circle-box svg { width: 100px; height: 100px; }
   .circle-text { font-size: 1rem; }
   .circle-text span { font-size: 0.55rem; }
@@ -940,25 +939,25 @@ body {
   .lvl-badge, .plan-pill { font-size: 0.55rem; padding: 2px 6px; }
   .av-hdr { width: 28px; height: 28px; font-size: 0.8rem; }
   
-  /* Mobile circles - FIXED - no cropping */
+  /* Mobile circles - PROPERLY ALIGNED */
   .circles {
-    flex-wrap: wrap;
     justify-content: center;
-    gap: 15px;
-    padding: 15px;
+    gap: 20px;
+    padding: 16px;
   }
   
   .circle-box {
     flex: 0 1 auto;
+    width: auto;
   }
   
   .circle-box svg {
-    width: 75px;
-    height: 75px;
+    width: 80px;
+    height: 80px;
   }
   
   .circle-text {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
   }
   
   .circle-text span {
@@ -978,19 +977,19 @@ body {
   .card h2 { font-size: 1.2rem; }
   .card h4 { font-size: 0.55rem; }
   
-  /* Small mobile circles - FULLY VISIBLE */
+  /* Small mobile circles - PROPERLY SPACED */
   .circles {
-    gap: 10px;
+    gap: 15px;
     padding: 12px;
   }
   
   .circle-box svg {
-    width: 65px;
-    height: 65px;
+    width: 70px;
+    height: 70px;
   }
   
   .circle-text {
-    font-size: 0.65rem;
+    font-size: 0.7rem;
   }
   
   .circle-text span {
@@ -1024,13 +1023,17 @@ body {
 
 /* Extra Small Mobile (under 380px) */
 @media (max-width: 380px) {
+  .circles {
+    gap: 10px;
+  }
+  
   .circle-box svg {
-    width: 55px;
-    height: 55px;
+    width: 60px;
+    height: 60px;
   }
   
   .circle-text {
-    font-size: 0.55rem;
+    font-size: 0.6rem;
   }
   
   .circle-text span {
@@ -1039,10 +1042,6 @@ body {
   
   .circle-box svg circle {
     stroke-width: 3;
-  }
-  
-  .circles {
-    gap: 8px;
   }
 }
 
@@ -1055,7 +1054,7 @@ body {
   .hdr-r { order: initial; width: auto; margin-top: 0; }
   
   /* Landscape circles */
-  .circles { flex-wrap: wrap; gap: 12px; }
-  .circle-box svg { width: 70px; height: 70px; }
-  .circle-text { font-size: 0.7rem; }
+  .circles { flex-wrap: wrap; gap: 15px; }
+  .circle-box svg { width: 75px; height: 75px; }
+  .circle-text { font-size: 0.75rem; }
 }
