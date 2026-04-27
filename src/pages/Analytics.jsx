@@ -18,52 +18,7 @@ export default function Analytics() {
   const [habitBreakdown, setHabitBreakdown] = useState([]);
   const [heatmapData, setHeatmapData] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
-
-  // Generate sample demo data for beautiful charts
-  const generateDemoData = () => {
-    // Weekly demo data
-    const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const demoWeekly = weekDays.map((day, i) => ({
-      day: day,
-      completed: Math.floor(Math.random() * 5) + 1,
-      total: 5,
-      percentage: Math.floor(Math.random() * 40) + 50
-    }));
-    setWeeklyData(demoWeekly);
-    
-    // Monthly demo data
-    const demoMonthly = [
-      { week: "Week 1", completed: 18, total: 35, percentage: 51 },
-      { week: "Week 2", completed: 24, total: 35, percentage: 68 },
-      { week: "Week 3", completed: 28, total: 35, percentage: 80 },
-      { week: "Week 4", completed: 22, total: 35, percentage: 63 },
-    ];
-    setMonthlyData(demoMonthly);
-    
-    // Habit breakdown demo
-    const demoHabits = [
-      { name: "Morning Run", value: 85, color: "#00e5ff" },
-      { name: "Read Books", value: 60, color: "#a855f7" },
-      { name: "Drink Water", value: 95, color: "#22c55e" },
-      { name: "Meditation", value: 45, color: "#ffd84d" },
-      { name: "Exercise", value: 70, color: "#f97316" },
-    ];
-    setHabitBreakdown(demoHabits);
-    
-    // Heatmap demo
-    const demoHeatmap = [];
-    const weekNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    for (let i = 0; i < 7; i++) {
-      demoHeatmap.push({
-        day: weekNames[i],
-        week1: Math.floor(Math.random() * 5) + 1,
-        week2: Math.floor(Math.random() * 5) + 1,
-        week3: Math.floor(Math.random() * 5) + 1,
-        week4: Math.floor(Math.random() * 5) + 1,
-      });
-    }
-    setHeatmapData(demoHeatmap);
-  };
+  const [hasRealData, setHasRealData] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -94,24 +49,20 @@ export default function Analytics() {
         const questsRes = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}/quests`);
         const questsData = await questsRes.json();
         if (questsData.success) {
-          setQuests(questsData.quests || []);
+          const userQuests = questsData.quests || [];
+          setQuests(userQuests);
           setStats(questsData.stats || {});
           
           // Check if user has real data
-          const hasRealData = (questsData.quests || []).length > 0;
+          const hasData = userQuests.length > 0;
+          setHasRealData(hasData);
           
-          if (hasRealData) {
-            generateRealAnalyticsData(questsData.quests || []);
-          } else {
-            // Show beautiful demo data
-            generateDemoData();
+          if (hasData) {
+            generateRealAnalyticsData(userQuests);
           }
-        } else {
-          generateDemoData();
         }
       } catch (err) {
         console.error("Error fetching analytics data:", err);
-        generateDemoData();
       } finally {
         setLoading(false);
       }
@@ -120,12 +71,14 @@ export default function Analytics() {
     fetchData();
   }, [navigate]);
 
-  // Generate real analytics data from user's quests
+  // Generate real analytics data from user's quests (NO DUMMY DATA)
   const generateRealAnalyticsData = (userQuests) => {
     // Weekly data - last 7 days
     const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const today = new Date();
     const weekData = [];
+    
+    let hasAnyCompletions = false;
     
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
@@ -136,6 +89,7 @@ export default function Analytics() {
       userQuests.forEach(quest => {
         if (quest.logs?.includes(dateStr)) {
           completedCount++;
+          hasAnyCompletions = true;
         }
       });
       
@@ -151,7 +105,7 @@ export default function Analytics() {
     }
     setWeeklyData(weekData);
     
-    // Monthly data
+    // Monthly data - last 4 weeks
     const monthData = [];
     for (let w = 0; w < 4; w++) {
       let weekCompleted = 0;
@@ -192,7 +146,7 @@ export default function Analytics() {
     });
     setHabitBreakdown(breakdown);
     
-    // Heatmap data
+    // Heatmap data - last 4 weeks
     const heatmap = [];
     const weekNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     for (let week = 0; week < 4; week++) {
@@ -228,7 +182,7 @@ export default function Analytics() {
     setHeatmapData(heatmap);
   };
 
-  // Calculate stats
+  // Calculate stats from real data
   const totalQuests = quests.length;
   const totalCompletions = stats.xp ? Math.floor(stats.xp / 10) : 0;
   const currentStreak = stats.streak || 0;
@@ -272,6 +226,28 @@ export default function Analytics() {
     );
   }
 
+  // If no quests, show empty state
+  if (totalQuests === 0) {
+    return (
+      <div className="analytics-page">
+        <div className="analytics-container">
+          <div className="analytics-header">
+            <h1>📊 Analytics Dashboard</h1>
+            <p>Complete some quests to see your analytics!</p>
+          </div>
+          <div className="empty-state-analytics">
+            <div className="empty-icon">🗺️</div>
+            <h3>No Data Yet</h3>
+            <p>Start creating and completing quests to see your progress charts here.</p>
+            <button className="create-quest-btn" onClick={() => navigate("/dashboard")}>
+              Go to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="analytics-page">
       <div className="analytics-container">
@@ -281,39 +257,39 @@ export default function Analytics() {
           <p>Track your progress, analyze patterns, and level up your habits</p>
         </div>
 
-        {/* Stats Cards */}
+        {/* Stats Cards - REAL DATA */}
         <div className="stats-grid-analytics">
           <div className="stat-card-analytics cyan">
             <div className="stat-icon">📋</div>
             <div className="stat-info">
-              <h3>{totalQuests || 3}</h3>
+              <h3>{totalQuests}</h3>
               <p>Active Quests</p>
             </div>
           </div>
           <div className="stat-card-analytics gold">
             <div className="stat-icon">✅</div>
             <div className="stat-info">
-              <h3>{totalCompletions || 24}</h3>
+              <h3>{totalCompletions}</h3>
               <p>Total Completions</p>
             </div>
           </div>
           <div className="stat-card-analytics purple">
             <div className="stat-icon">🔥</div>
             <div className="stat-info">
-              <h3>{currentStreak || 7}</h3>
+              <h3>{currentStreak}</h3>
               <p>Current Streak</p>
             </div>
           </div>
           <div className="stat-card-analytics green">
             <div className="stat-icon">🏆</div>
             <div className="stat-info">
-              <h3>{bestStreak || 12}</h3>
+              <h3>{bestStreak}</h3>
               <p>Best Streak</p>
             </div>
           </div>
         </div>
 
-        {/* Weekly Progress Chart - GitHub Style */}
+        {/* Weekly Progress Chart - REAL DATA */}
         <div className="chart-card">
           <div className="chart-header">
             <h3>📈 Weekly Progress</h3>
@@ -336,7 +312,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Monthly Progress & Habit Breakdown */}
+        {/* Monthly Progress & Habit Breakdown - REAL DATA */}
         <div className="two-columns">
           <div className="chart-card">
             <div className="chart-header">
@@ -351,7 +327,7 @@ export default function Analytics() {
                 <Tooltip
                   contentStyle={{ backgroundColor: "#161e30", border: "1px solid #a855f7", borderRadius: "8px" }}
                 />
-                <Bar dataKey="percentage" fill="#a855f7" radius={[6, 6, 0, 0]} />
+                <Bar dataKey="completed" fill="#a855f7" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -386,16 +362,16 @@ export default function Analytics() {
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="empty-chart">✨ Complete quests to see your habit breakdown!</div>
+              <div className="empty-chart">✨ Complete more quests to see breakdown!</div>
             )}
           </div>
         </div>
 
-        {/* Activity Heatmap - GitHub Style */}
+        {/* Activity Heatmap - REAL DATA */}
         <div className="chart-card full-width">
           <div className="chart-header">
             <h3>🔥 Activity Heatmap</h3>
-            <span>GitHub-style contribution graph</span>
+            <span>Daily completions over 4 weeks</span>
           </div>
           <div className="heatmap-container">
             <div className="heatmap-grid">
@@ -449,9 +425,9 @@ export default function Analytics() {
           </div>
           <div className="xp-progress-container">
             <div className="xp-progress-bar">
-              <div className="xp-progress-fill" style={{ width: `${(stats.xp || 47) % 100}%` }}></div>
+              <div className="xp-progress-fill" style={{ width: `${(stats.xp || 0) % 100}%` }}></div>
             </div>
-            <p className="xp-text">{stats.xp || 470} / {Math.floor((stats.xp || 470) / 100 + 1) * 100} XP to next level</p>
+            <p className="xp-text">{stats.xp || 0} XP earned</p>
           </div>
           <div className="xp-milestones">
             <div className="milestone">Novice</div>
