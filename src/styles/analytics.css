@@ -951,3 +951,159 @@
     font-size: 7px;
   }
 }
+/* ====================== COMPACT ACTIVITY HEATMAP ====================== */
+.heatmap-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px 0;
+  margin-bottom: 16px;
+}
+
+.heatmap-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.heatmap-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.heatmap-day-label {
+  width: 38px;
+  font-size: 11px;
+  color: #94a3b8;
+  font-weight: 600;
+  font-family: 'Orbitron', monospace;
+  flex-shrink: 0;
+}
+
+.heatmap-cells {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+}
+
+.heatmap-cell {
+  flex: 1;
+  aspect-ratio: 1;
+  min-width: 18px;
+  max-width: 26px;
+  border-radius: 5px;
+  background: #1a2035;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.12);
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.6);
+}
+
+.heatmap-cell.level-0 { background: #1a2035; }
+.heatmap-cell.level-1 { background: rgba(34, 197, 94, 0.25); color: #22c55e; }
+.heatmap-cell.level-2 { background: rgba(34, 197, 94, 0.45); color: #22c55e; }
+.heatmap-cell.level-3 { background: rgba(34, 197, 94, 0.65); color: #fff; }
+.heatmap-cell.level-4 { background: rgba(34, 197, 94, 0.85); color: #fff; }
+.heatmap-cell.level-5 { background: #22c55e; color: #fff; }
+
+.heatmap-value {
+  font-size: 8px;
+  font-weight: 700;
+}
+
+/* Week Labels */
+.heatmap-week-labels {
+  display: flex;
+  margin-bottom: 6px;
+  padding-left: 46px;
+  gap: 4px;
+}
+
+.week-label {
+  flex: 1;
+  text-align: center;
+  font-size: 10px;
+  color: #a855f7;
+  font-family: 'Orbitron', monospace;
+}
+
+/* Legend */
+.heatmap-legend {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.legend-colors {
+  display: flex;
+  gap: 3px;
+}
+
+.legend-color {
+  width: 22px;
+  height: 11px;
+  border-radius: 3px;
+}
+
+/* ====================== RESPONSIVE - MOBILE FIRST ====================== */
+@media (max-width: 768px) {
+  .heatmap-cell {
+    min-width: 17px;
+    max-width: 23px;
+    font-size: 8px;
+  }
+  .heatmap-day-label {
+    width: 34px;
+    font-size: 10px;
+  }
+  .heatmap-cells {
+    gap: 2.5px;
+  }
+}
+
+@media (max-width: 600px) {
+  .heatmap-cell {
+    min-width: 16px;
+    max-width: 21px;
+    font-size: 7px;
+  }
+  .heatmap-day-label {
+    width: 30px;
+    font-size: 9.5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .heatmap-cell {
+    min-width: 14px;
+    max-width: 19px;
+    font-size: 7px;
+  }
+  .heatmap-day-label {
+    width: 28px;
+    font-size: 9px;
+  }
+  .heatmap-week-labels {
+    padding-left: 36px;
+  }
+}
+
+/* No scroll on mobile */
+@media (max-width: 768px) {
+  .heatmap-container {
+    overflow-x: hidden;
+  }
+}
