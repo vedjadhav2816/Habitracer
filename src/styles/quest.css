@@ -13,7 +13,6 @@
   z-index: 1100;
 }
 
-/* Modal Container */
 .modal {
   background: linear-gradient(145deg, #0d1120, #0a0e1a);
   border: 1px solid rgba(0, 229, 255, 0.25);
@@ -34,17 +33,9 @@
 }
 
 /* Scrollbar */
-.modal::-webkit-scrollbar {
-  width: 6px;
-}
-.modal::-webkit-scrollbar-track {
-  background: #1a2035;
-  border-radius: 10px;
-}
-.modal::-webkit-scrollbar-thumb {
-  background: linear-gradient(#00e5ff, #a855f7);
-  border-radius: 10px;
-}
+.modal::-webkit-scrollbar { width: 6px; }
+.modal::-webkit-scrollbar-track { background: #1a2035; border-radius: 10px; }
+.modal::-webkit-scrollbar-thumb { background: linear-gradient(#00e5ff, #a855f7); border-radius: 10px; }
 
 /* Header */
 .modal-header {
@@ -56,7 +47,7 @@
   border-bottom: 1px solid rgba(255,255,255,0.1);
 }
 
-.modal-header h3 {
+.modal-header span {
   font-family: 'Orbitron', monospace;
   font-size: 15px;
   letter-spacing: 1.5px;
@@ -122,7 +113,7 @@
   margin-bottom: 22px;
 }
 
-/* Icon Grid */
+/* Icon Grid (Step 1) */
 .icon-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(58px, 1fr));
@@ -155,7 +146,126 @@
   box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
 }
 
-/* Inputs */
+/* STEP 2 - Quest Length Options */
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.option {
+  background: #161e30;
+  border: 1px solid #252f4a;
+  border-radius: 16px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 15px;
+}
+
+.option:hover {
+  border-color: #00e5ff;
+  transform: translateY(-2px);
+}
+
+.option.active {
+  border: 2px solid #00e5ff;
+  background: rgba(0, 229, 255, 0.08);
+}
+
+.option h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.option span {
+  font-size: 13px;
+  color: #94a3b8;
+}
+
+/* Grid for progress visualization */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 4px;
+  margin: 20px 0;
+  padding: 12px;
+  background: #161e30;
+  border-radius: 16px;
+}
+
+.box {
+  height: 8px;
+  background: #252f4a;
+  border-radius: 2px;
+}
+
+.box.active {
+  background: linear-gradient(90deg, #00e5ff, #a855f7);
+}
+
+/* STEP 3 - Goal Options */
+.goal-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 20px 0;
+}
+
+.goal-box {
+  background: #161e30;
+  border: 1px solid #252f4a;
+  border-radius: 16px;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.goal-box:hover {
+  border-color: #00e5ff;
+  transform: translateY(-2px);
+}
+
+.goal-box.active {
+  border: 2px solid #00e5ff;
+  background: rgba(0, 229, 255, 0.08);
+}
+
+/* STEP 4 - Days Selection */
+.days-select {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.day-box {
+  background: #161e30;
+  border: 1px solid #252f4a;
+  border-radius: 12px;
+  padding: 12px 10px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.day-box.active {
+  background: #00e5ff;
+  color: #07090f;
+  border-color: #00e5ff;
+}
+
+/* Common Inputs */
 .quest-input {
   width: 100%;
   padding: 16px 18px;
@@ -164,39 +274,13 @@
   border-radius: 14px;
   color: #e2e8f0;
   font-size: 15px;
-  transition: all 0.2s;
+  margin: 12px 0;
 }
 
 .quest-input:focus {
   outline: none;
   border-color: #00e5ff;
   box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.15);
-}
-
-/* Duration & Target Cards */
-.duration-card,
-.target-card {
-  background: #161e30;
-  border: 1px solid #252f4a;
-  border-radius: 16px;
-  padding: 18px;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.duration-card:hover,
-.target-card:hover {
-  border-color: #00e5ff;
-  transform: translateY(-2px);
-}
-
-.duration-card.active,
-.target-card.active {
-  border: 2px solid #00e5ff;
-  background: rgba(0, 229, 255, 0.08);
 }
 
 /* Buttons */
@@ -216,7 +300,6 @@
   font-weight: 600;
   font-size: 15px;
   cursor: pointer;
-  transition: all 0.2s;
 }
 
 .back-btn:hover {
@@ -237,7 +320,6 @@
   font-size: 15px;
   cursor: pointer;
   box-shadow: 0 0 20px rgba(0, 229, 255, 0.4);
-  transition: all 0.3s;
 }
 
 .next-btn:hover,
@@ -246,58 +328,30 @@
   box-shadow: 0 10px 30px rgba(168, 85, 247, 0.5);
 }
 
-/* Responsive Design - Very Important */
+/* ====================== RESPONSIVE ====================== */
 @media (max-width: 768px) {
-  .modal {
-    padding: 20px;
-    border-radius: 24px;
-  }
-  .icon-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
+  .modal { padding: 20px; border-radius: 24px; }
+  .goal-options { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 600px) {
-  .modal {
-    width: 96%;
-    padding: 18px;
-    max-height: 95vh;
-  }
-  .section-title {
-    font-size: 20px;
-  }
-  .icon-grid {
-    grid-template-columns: repeat(4, 1fr);
-    gap: 10px;
-  }
-  .icon-box {
-    font-size: 24px;
-    padding: 12px;
-  }
+  .modal { width: 96%; padding: 18px; }
+  .icon-grid { grid-template-columns: repeat(4, 1fr); }
+  .days-select { grid-template-columns: repeat(4, 1fr); }
 }
 
 @media (max-width: 480px) {
-  .modal {
-    padding: 16px;
-  }
-  .icon-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  .duration-card,
-  .target-card {
-    padding: 14px;
-  }
+  .modal { padding: 16px; }
+  .icon-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .option, .goal-box, .day-box { padding: 14px; }
 }
 
 @media (max-width: 380px) {
-  .icon-grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+  .icon-grid { grid-template-columns: repeat(3, 1fr); }
+  .days-select { grid-template-columns: repeat(3, 1fr); }
 }
 
-/* Landscape Mode */
+/* Landscape */
 @media (max-width: 900px) and (orientation: landscape) {
-  .modal {
-    max-height: 88vh;
-  }
+  .modal { max-height: 88vh; }
 }
