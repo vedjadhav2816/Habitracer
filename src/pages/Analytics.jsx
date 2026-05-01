@@ -71,25 +71,26 @@ export default function Analytics() {
     fetchData();
   }, [navigate]);
 
-  // Generate real analytics data from user's quests (NO DUMMY DATA)
+  // Generate real analytics data from user's quests with proper date handling
   const generateRealAnalyticsData = (userQuests) => {
-    // Weekly data - last 7 days
-    const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    // Weekly data - last 7 days with actual dates
     const today = new Date();
     const weekData = [];
     
-    let hasAnyCompletions = false;
-    
+    // Get the actual day names for the last 7 days
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
       const dateStr = date.toISOString().split("T")[0];
       
+      // Get day name (Mon, Tue, etc.)
+      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const dayName = dayNames[date.getDay()];
+      
       let completedCount = 0;
       userQuests.forEach(quest => {
         if (quest.logs?.includes(dateStr)) {
           completedCount++;
-          hasAnyCompletions = true;
         }
       });
       
@@ -97,38 +98,47 @@ export default function Analytics() {
       const percentage = Math.round((completedCount / total) * 100);
       
       weekData.push({
-        day: weekDays[6 - i],
+        day: dayName,
+        fullDate: dateStr,
         completed: completedCount,
         total: total,
-        percentage: percentage
+        percentage: percentage,
+        isToday: i === 0
       });
     }
     setWeeklyData(weekData);
     
-    // Monthly data - last 4 weeks
+    // Monthly data - last 4 weeks with actual week ranges
     const monthData = [];
-    for (let w = 0; w < 4; w++) {
+    const weeks = getLast4WeeksRange();
+    
+    for (let w = 0; w < weeks.length; w++) {
+      const weekRange = weeks[w];
       let weekCompleted = 0;
       let weekTotal = 0;
-      for (let d = 0; d < 7; d++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() - (w * 7 + d));
-        const dateStr = date.toISOString().split("T")[0];
+      
+      // Iterate through each day in the week range
+      for (const dateStr of weekRange.dates) {
+        let dayCompleted = 0;
         userQuests.forEach(quest => {
           if (quest.logs?.includes(dateStr)) {
-            weekCompleted++;
+            dayCompleted++;
           }
         });
+        weekCompleted += dayCompleted;
         weekTotal += userQuests.length;
       }
+      
       monthData.push({
-        week: `Week ${4 - w}`,
+        week: weekRange.label,
+        startDate: weekRange.startDate,
+        endDate: weekRange.endDate,
         completed: weekCompleted,
         total: weekTotal,
         percentage: weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0
       });
     }
-    setMonthlyData(monthData.reverse());
+    setMonthlyData(monthData);
     
     // Habit breakdown - completion rates per quest
     const breakdown = [];
@@ -141,45 +151,79 @@ export default function Analytics() {
       breakdown.push({
         name: quest.name.length > 15 ? quest.name.slice(0, 12) + "..." : quest.name,
         value: percentage,
-        color: colors[idx % colors.length]
+        color: colors[idx % colors.length],
+        completions: completionCount,
+        totalDays: maxDays
       });
     });
     setHabitBreakdown(breakdown);
     
-    // Heatmap data - last 4 weeks
+    // Heatmap data - last 4 weeks with actual dates
     const heatmap = [];
-    const weekNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    
+    // Get dates for last 4 weeks
+    const heatmapDates = [];
     for (let week = 0; week < 4; week++) {
       for (let day = 0; day < 7; day++) {
         const date = new Date(today);
         date.setDate(today.getDate() - (week * 7 + (6 - day)));
         const dateStr = date.toISOString().split("T")[0];
-        
-        let completedCount = 0;
-        userQuests.forEach(quest => {
-          if (quest.logs?.includes(dateStr)) {
-            completedCount++;
-          }
-        });
-        
-        if (week === 0) {
-          heatmap.push({
-            day: weekNames[day],
-            week1: completedCount,
-            week2: 0,
-            week3: 0,
-            week4: 0
-          });
-        } else if (week === 1) {
-          heatmap[day].week2 = completedCount;
-        } else if (week === 2) {
-          heatmap[day].week3 = completedCount;
-        } else if (week === 3) {
-          heatmap[day].week4 = completedCount;
-        }
+        heatmapDates.push({ week, day, dateStr, dayName: dayNames[day] });
       }
     }
+    
+    // Group by day name
+    for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
+      const dayName = dayNames[dayIdx];
+      const rowData = { day: dayName, week1: 0, week2: 0, week3: 0, week4: 0 };
+      
+      for (let week = 0; week < 4; week++) {
+        const dateObj = heatmapDates.find(d => d.week === week && d.day === dayIdx);
+        if (dateObj) {
+          let completedCount = 0;
+          userQuests.forEach(quest => {
+            if (quest.logs?.includes(dateObj.dateStr)) {
+              completedCount++;
+            }
+          });
+          rowData[`week${week + 1}`] = completedCount;
+        }
+      }
+      heatmap.push(rowData);
+    }
     setHeatmapData(heatmap);
+  };
+
+  // Helper function to get last 4 weeks ranges
+  const getLast4WeeksRange = () => {
+    const today = new Date();
+    const weeks = [];
+    
+    for (let w = 3; w >= 0; w--) {
+      const startDate = new Date(today);
+      startDate.setDate(today.getDate() - (w * 7 + 6));
+      const endDate = new Date(today);
+      endDate.setDate(today.getDate() - (w * 7));
+      
+      const startStr = `${startDate.getMonth() + 1}/${startDate.getDate()}`;
+      const endStr = `${endDate.getMonth() + 1}/${endDate.getDate()}`;
+      
+      const dates = [];
+      for (let d = 0; d < 7; d++) {
+        const date = new Date(startDate);
+        date.setDate(startDate.getDate() + d);
+        dates.push(date.toISOString().split("T")[0]);
+      }
+      
+      weeks.push({
+        label: `Week ${4 - w}`,
+        startDate: startStr,
+        endDate: endStr,
+        dates: dates
+      });
+    }
+    return weeks;
   };
 
   // Calculate stats from real data
@@ -188,6 +232,22 @@ export default function Analytics() {
   const currentStreak = stats.streak || 0;
   const bestStreak = stats.streak || 0;
   const level = Math.floor((stats.xp || 0) / 100) + 1;
+
+  // Custom tooltip for weekly chart
+  const WeeklyTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="custom-tooltip">
+          <p className="tooltip-date">{data.fullDate}</p>
+          <p className="tooltip-completed">Completed: {data.completed}/{data.total}</p>
+          <p className="tooltip-percentage">Rate: {data.percentage}%</p>
+          {data.isToday && <p className="tooltip-today">📅 Today</p>}
+        </div>
+      );
+    }
+    return null;
+  };
 
   // Pro feature lock overlay
   if (!isPro && !loading) {
@@ -289,7 +349,7 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Weekly Progress Chart - REAL DATA */}
+        {/* Weekly Progress Chart - REAL DATA WITH ACTUAL DATES */}
         <div className="chart-card">
           <div className="chart-header">
             <h3>📈 Weekly Progress</h3>
@@ -301,10 +361,7 @@ export default function Analytics() {
                 <CartesianGrid strokeDasharray="3 3" stroke="#1f2a4a" />
                 <XAxis dataKey="day" stroke="#94a3b8" tick={{ fontSize: 11 }} />
                 <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} />
-                <Tooltip 
-                  contentStyle={{ backgroundColor: "#161e30", border: "1px solid #00e5ff", borderRadius: "8px" }}
-                  labelStyle={{ color: "#fff" }}
-                />
+                <Tooltip content={<WeeklyTooltip />} />
                 <Bar dataKey="completed" fill="#00e5ff" radius={[4, 4, 0, 0]} barSize={30} />
                 <Line type="monotone" dataKey="percentage" stroke="#a855f7" strokeWidth={2} dot={{ fill: "#a855f7", r: 4 }} />
               </ComposedChart>
@@ -326,6 +383,13 @@ export default function Analytics() {
                 <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} />
                 <Tooltip
                   contentStyle={{ backgroundColor: "#161e30", border: "1px solid #a855f7", borderRadius: "8px" }}
+                  labelFormatter={(label, payload) => {
+                    if (payload && payload[0] && payload[0].payload) {
+                      const data = payload[0].payload;
+                      return `${label} (${data.startDate} - ${data.endDate})`;
+                    }
+                    return label;
+                  }}
                 />
                 <Bar dataKey="completed" fill="#a855f7" radius={[6, 6, 0, 0]} />
               </BarChart>
@@ -357,6 +421,10 @@ export default function Analytics() {
                   </Pie>
                   <Tooltip
                     contentStyle={{ backgroundColor: "#161e30", border: "1px solid #22c55e", borderRadius: "8px" }}
+                    formatter={(value, name, props) => {
+                      const data = props.payload;
+                      return [`${value}%`, `${data.name} (${data.completions}/${data.totalDays} days)`];
+                    }}
                   />
                   <Legend wrapperStyle={{ fontSize: "11px" }} />
                 </PieChart>
