@@ -17,6 +17,7 @@ export default function Analytics() {
   const [weeklyData, setWeeklyData] = useState([]);
   const [habitBreakdown, setHabitBreakdown] = useState([]);
   const [heatmapData, setHeatmapData] = useState([]);
+  const [heatmapWeekLabels, setHeatmapWeekLabels] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
   const [hasRealData, setHasRealData] = useState(false);
 
@@ -99,7 +100,7 @@ export default function Analytics() {
       
       weekData.push({
         day: dayName,
-        fullDate: dateStr,
+        fullDate: `${date.getMonth() + 1}/${date.getDate()}`,
         completed: completedCount,
         total: total,
         percentage: percentage,
@@ -110,7 +111,7 @@ export default function Analytics() {
     
     // Monthly data - last 4 weeks with actual week ranges
     const monthData = [];
-    const weeks = getLast4WeeksRange();
+    const weeks = getLast4WeeksRangeWithDates();
     
     for (let w = 0; w < weeks.length; w++) {
       const weekRange = weeks[w];
@@ -131,8 +132,7 @@ export default function Analytics() {
       
       monthData.push({
         week: weekRange.label,
-        startDate: weekRange.startDate,
-        endDate: weekRange.endDate,
+        dateRange: weekRange.dateRange,
         completed: weekCompleted,
         total: weekTotal,
         percentage: weekTotal > 0 ? Math.round((weekCompleted / weekTotal) * 100) : 0
@@ -158,25 +158,57 @@ export default function Analytics() {
     });
     setHabitBreakdown(breakdown);
     
-    // Heatmap data - last 4 weeks with actual dates
-    const heatmap = [];
+    // Heatmap data - last 4 weeks with ACTUAL WEEK LABELS
+    const todayDate = new Date();
+    const weekLabels = [];
+    const heatmapRows = [];
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    
+    // Create week labels with actual date ranges
+    for (let week = 0; week < 4; week++) {
+      const weekStart = new Date(todayDate);
+      weekStart.setDate(todayDate.getDate() - (week * 7 + 6));
+      const weekEnd = new Date(todayDate);
+      weekEnd.setDate(todayDate.getDate() - (week * 7));
+      
+      const startStr = `${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
+      const endStr = `${weekEnd.getMonth() + 1}/${weekEnd.getDate()}`;
+      weekLabels.push({
+        id: week,
+        label: `Week ${week + 1}`,
+        range: `${startStr} - ${endStr}`
+      });
+    }
+    setHeatmapWeekLabels(weekLabels.reverse());
     
     // Get dates for last 4 weeks
     const heatmapDates = [];
     for (let week = 0; week < 4; week++) {
       for (let day = 0; day < 7; day++) {
-        const date = new Date(today);
-        date.setDate(today.getDate() - (week * 7 + (6 - day)));
+        const date = new Date(todayDate);
+        date.setDate(todayDate.getDate() - (week * 7 + (6 - day)));
         const dateStr = date.toISOString().split("T")[0];
-        heatmapDates.push({ week, day, dateStr, dayName: dayNames[day] });
+        const displayDate = `${date.getMonth() + 1}/${date.getDate()}`;
+        heatmapDates.push({ 
+          week: 3 - week, 
+          day, 
+          dateStr, 
+          displayDate,
+          dayName: dayNames[day] 
+        });
       }
     }
     
-    // Group by day name
+    // Group by day name and create heatmap rows with tooltip info
     for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
       const dayName = dayNames[dayIdx];
-      const rowData = { day: dayName, week1: 0, week2: 0, week3: 0, week4: 0 };
+      const rowData = { 
+        day: dayName, 
+        week1: { count: 0, date: "" },
+        week2: { count: 0, date: "" },
+        week3: { count: 0, date: "" },
+        week4: { count: 0, date: "" }
+      };
       
       for (let week = 0; week < 4; week++) {
         const dateObj = heatmapDates.find(d => d.week === week && d.day === dayIdx);
@@ -187,16 +219,19 @@ export default function Analytics() {
               completedCount++;
             }
           });
-          rowData[`week${week + 1}`] = completedCount;
+          rowData[`week${week + 1}`] = {
+            count: completedCount,
+            date: dateObj.displayDate
+          };
         }
       }
-      heatmap.push(rowData);
+      heatmapRows.push(rowData);
     }
-    setHeatmapData(heatmap);
+    setHeatmapData(heatmapRows);
   };
 
-  // Helper function to get last 4 weeks ranges
-  const getLast4WeeksRange = () => {
+  // Helper function to get last 4 weeks ranges with actual dates
+  const getLast4WeeksRangeWithDates = () => {
     const today = new Date();
     const weeks = [];
     
@@ -218,8 +253,7 @@ export default function Analytics() {
       
       weeks.push({
         label: `Week ${4 - w}`,
-        startDate: startStr,
-        endDate: endStr,
+        dateRange: `${startStr} - ${endStr}`,
         dates: dates
       });
     }
@@ -240,13 +274,25 @@ export default function Analytics() {
       return (
         <div className="custom-tooltip">
           <p className="tooltip-date">{data.fullDate}</p>
-          <p className="tooltip-completed">Completed: {data.completed}/{data.total}</p>
-          <p className="tooltip-percentage">Rate: {data.percentage}%</p>
+          <p className="tooltip-completed">✅ Completed: {data.completed}/{data.total}</p>
+          <p className="tooltip-percentage">📊 Rate: {data.percentage}%</p>
           {data.isToday && <p className="tooltip-today">📅 Today</p>}
         </div>
       );
     }
     return null;
+  };
+
+  // Custom heatmap tooltip
+  const HeatmapTooltip = ({ count, date, week }) => {
+    if (count === 0) return null;
+    return (
+      <div className="heatmap-tooltip">
+        <p className="tooltip-date">{date}</p>
+        <p className="tooltip-completed">✅ {count} quest{count !== 1 ? 's' : ''} completed</p>
+        <p className="tooltip-week">📅 {week}</p>
+      </div>
+    );
   };
 
   // Pro feature lock overlay
@@ -386,7 +432,7 @@ export default function Analytics() {
                   labelFormatter={(label, payload) => {
                     if (payload && payload[0] && payload[0].payload) {
                       const data = payload[0].payload;
-                      return `${label} (${data.startDate} - ${data.endDate})`;
+                      return `${label} (${data.dateRange})`;
                     }
                     return label;
                   }}
@@ -435,51 +481,68 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Activity Heatmap - REAL DATA */}
+        {/* Activity Heatmap - IMPROVED WITH DATE LABELS */}
         <div className="chart-card full-width">
           <div className="chart-header">
             <h3>🔥 Activity Heatmap</h3>
             <span>Daily completions over 4 weeks</span>
           </div>
           <div className="heatmap-container">
+            {/* Week labels with date ranges */}
+            <div className="heatmap-week-labels">
+              <div className="week-label-spacer"></div>
+              {heatmapWeekLabels.map((week) => (
+                <div key={week.id} className="week-label" title={week.range}>
+                  {week.label}
+                  <span className="week-range">{week.range}</span>
+                </div>
+              ))}
+            </div>
+            
+            {/* Heatmap grid */}
             <div className="heatmap-grid">
               {heatmapData.map((row, idx) => (
                 <div key={idx} className="heatmap-row">
                   <span className="heatmap-day-label">{row.day}</span>
                   <div className="heatmap-cells">
-                    <div className={`heatmap-cell level-${Math.min(5, row.week1)}`} title={`Week 1: ${row.week1} completions`}>
-                      {row.week1 > 0 && <span className="heatmap-value">{row.week1}</span>}
+                    <div 
+                      className={`heatmap-cell level-${Math.min(5, row.week1.count)}`} 
+                      title={`Week 1 (${row.week1.date}): ${row.week1.count} completion${row.week1.count !== 1 ? 's' : ''}`}
+                    >
+                      {row.week1.count > 0 && <span className="heatmap-value">{row.week1.count}</span>}
                     </div>
-                    <div className={`heatmap-cell level-${Math.min(5, row.week2)}`} title={`Week 2: ${row.week2} completions`}>
-                      {row.week2 > 0 && <span className="heatmap-value">{row.week2}</span>}
+                    <div 
+                      className={`heatmap-cell level-${Math.min(5, row.week2.count)}`} 
+                      title={`Week 2 (${row.week2.date}): ${row.week2.count} completion${row.week2.count !== 1 ? 's' : ''}`}
+                    >
+                      {row.week2.count > 0 && <span className="heatmap-value">{row.week2.count}</span>}
                     </div>
-                    <div className={`heatmap-cell level-${Math.min(5, row.week3)}`} title={`Week 3: ${row.week3} completions`}>
-                      {row.week3 > 0 && <span className="heatmap-value">{row.week3}</span>}
+                    <div 
+                      className={`heatmap-cell level-${Math.min(5, row.week3.count)}`} 
+                      title={`Week 3 (${row.week3.date}): ${row.week3.count} completion${row.week3.count !== 1 ? 's' : ''}`}
+                    >
+                      {row.week3.count > 0 && <span className="heatmap-value">{row.week3.count}</span>}
                     </div>
-                    <div className={`heatmap-cell level-${Math.min(5, row.week4)}`} title={`Week 4: ${row.week4} completions`}>
-                      {row.week4 > 0 && <span className="heatmap-value">{row.week4}</span>}
+                    <div 
+                      className={`heatmap-cell level-${Math.min(5, row.week4.count)}`} 
+                      title={`Week 4 (${row.week4.date}): ${row.week4.count} completion${row.week4.count !== 1 ? 's' : ''}`}
+                    >
+                      {row.week4.count > 0 && <span className="heatmap-value">{row.week4.count}</span>}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="week-labels">
-              <span></span>
-              <span>Week 1</span>
-              <span>Week 2</span>
-              <span>Week 3</span>
-              <span>Week 4</span>
-            </div>
           </div>
           <div className="heatmap-legend">
             <span>Less</span>
             <div className="legend-colors">
-              <div className="legend-color level-0"></div>
-              <div className="legend-color level-1"></div>
-              <div className="legend-color level-2"></div>
-              <div className="legend-color level-3"></div>
-              <div className="legend-color level-4"></div>
-              <div className="legend-color level-5"></div>
+              <div className="legend-color level-0" title="0 completions"></div>
+              <div className="legend-color level-1" title="1 completion"></div>
+              <div className="legend-color level-2" title="2 completions"></div>
+              <div className="legend-color level-3" title="3 completions"></div>
+              <div className="legend-color level-4" title="4 completions"></div>
+              <div className="legend-color level-5" title="5+ completions"></div>
             </div>
             <span>More</span>
           </div>
