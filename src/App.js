@@ -8,6 +8,7 @@ import Upgrade from "./pages/Upgrade";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import Contact from "./pages/Contact";
+import TermsOfService from "./pages/TermsOfService";
 
 
 
@@ -25,6 +26,7 @@ function App() {
         <Route path="/payment-success" element={<PaymentSuccess />} /> 
         <Route path="/privacy" element={<PrivacyPolicy />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/terms" element={<TermsOfService />} />
       </Routes>
     </Router>
   );

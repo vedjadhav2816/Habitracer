@@ -64,7 +64,7 @@ export default function Footer() {
           <h4>Legal</h4>
           <ul>
            <li><button onClick={() => navigate("/privacy")} className="footer-link-btn">Privacy Policy</button></li>
-            <li><a href="#">Terms of Service</a></li>
+            <li><button onClick={() => navigate("/terms")} className="footer-link-btn">Terms of Service</button></li>
             <li><a href="#">Cookie Policy</a></li>
             <li><a href="#">GDPR</a></li>
           </ul>
