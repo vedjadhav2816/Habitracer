@@ -52,7 +52,7 @@ export default function Footer() {
           <h4>Resources</h4>
           <ul>
             <li><a href="#">Blog</a></li>
-            <li><a href="#">Help Center</a></li>
+            <li><button onClick={() => navigate("/help")} className="footer-link-btn">Help Center</button></li>
             <li><a href="#">Community</a></li>
             <li><a href="#">Roadmap</a></li>
             <li><a href="#">Changelog</a></li>
