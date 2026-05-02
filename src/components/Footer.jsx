@@ -78,7 +78,7 @@ export default function Footer() {
           <div className="footer-bottom-links">
             <a href="#">Privacy</a>
             <a href="#">Terms</a>
-        <button onClick={() => navigate("/contact")} className="footer-bottom-link">Contact</button>
+        <a href="/contact" className="footer-bottom-link">Contact</a>
             <a href="#">Status</a>
           </div>
         </div>

@@ -11,7 +11,7 @@ export default function Navbar() {
       <div className="nav-links">
         <Link to="/">Home</Link>
         <Link to="/about">About</Link>
-        <Link to="/contact">Contact</Link>
+        <a href="/contact">Contact</a>
         <Link to="/help">Help</Link>
         <Link to="/login" className="login-btn">Login</Link>
         <Link to="/register" className="get-started-btn">Get Started Free</Link>
