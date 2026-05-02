@@ -34,7 +34,6 @@ export default function Analytics() {
         const userData = await userRes.json();
         setUser(userData);
         
-        // Check subscription from backend
         const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${userId}`);
         const subData = await subRes.json();
         
@@ -54,7 +53,6 @@ export default function Analytics() {
           setQuests(userQuests);
           setStats(questsData.stats || {});
           
-          // Check if user has real data
           const hasData = userQuests.length > 0;
           setHasRealData(hasData);
           
@@ -72,9 +70,8 @@ export default function Analytics() {
     fetchData();
   }, [navigate]);
 
-  // Generate real analytics data from user's quests with proper date handling
   const generateRealAnalyticsData = (userQuests) => {
-    // Weekly data - last 7 days with actual dates
+    // Weekly data - last 7 days
     const today = new Date();
     const weekData = [];
     
@@ -107,7 +104,7 @@ export default function Analytics() {
     }
     setWeeklyData(weekData);
     
-    // Monthly data - last 4 weeks with actual week ranges
+    // Monthly data
     const monthData = [];
     const weeks = getLast4WeeksRangeWithDates();
     
@@ -137,7 +134,7 @@ export default function Analytics() {
     }
     setMonthlyData(monthData);
     
-    // Habit breakdown - completion rates per quest
+    // Habit breakdown
     const breakdown = [];
     const colors = ["#00e5ff", "#a855f7", "#22c55e", "#ffd84d", "#f97316", "#ef4444", "#06b6d4", "#ec4899"];
     userQuests.forEach((quest, idx) => {
@@ -155,13 +152,13 @@ export default function Analytics() {
     });
     setHabitBreakdown(breakdown);
     
-    // Heatmap data - last 4 weeks with PROPER ORDER (Week 1 = most recent)
+    // Heatmap data - IMPROVED WITH BETTER VISUALIZATION
     const todayDate = new Date();
-    const heatmapRows = [];
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const weekLabels = [];
+    const heatmapRows = [];
     
-    // Create week labels with correct date ranges (Week 1 = most recent, Week 4 = oldest)
+    // Create week labels with date ranges
     for (let week = 0; week < 4; week++) {
       const weekEnd = new Date(todayDate);
       weekEnd.setDate(todayDate.getDate() - (week * 7));
@@ -181,7 +178,11 @@ export default function Analytics() {
     }
     setHeatmapWeekLabels(weekLabels);
     
-    // Collect all dates for the last 4 weeks
+    // Get today's date info for highlighting
+    const todayStr = todayDate.toISOString().split("T")[0];
+    const todayMonthDay = `${todayDate.getMonth() + 1}/${todayDate.getDate()}`;
+    
+    // Collect all dates for the last 4 weeks with additional metadata
     const allDates = [];
     for (let week = 0; week < 4; week++) {
       const weekLabel = weekLabels[week];
@@ -190,7 +191,10 @@ export default function Analytics() {
         date.setDate(weekLabel.startDate.getDate() + day);
         const dateStr = date.toISOString().split("T")[0];
         const displayDate = `${date.getMonth() + 1}/${date.getDate()}`;
-        const dayName = dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1];
+        let dayName = dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1];
+        
+        // Fix Sunday mapping
+        if (date.getDay() === 0) dayName = "Sun";
         
         let completedCount = 0;
         userQuests.forEach(quest => {
@@ -203,7 +207,9 @@ export default function Analytics() {
           week: week,
           dayName: dayName,
           displayDate: displayDate,
-          count: completedCount
+          fullDate: dateStr,
+          count: completedCount,
+          isToday: dateStr === todayStr
         });
       }
     }
@@ -213,10 +219,10 @@ export default function Analytics() {
       const dayName = dayNames[dayIdx];
       const rowData = {
         day: dayName,
-        week1: { count: 0, date: "" },
-        week2: { count: 0, date: "" },
-        week3: { count: 0, date: "" },
-        week4: { count: 0, date: "" }
+        week1: { count: 0, date: "", isToday: false },
+        week2: { count: 0, date: "", isToday: false },
+        week3: { count: 0, date: "", isToday: false },
+        week4: { count: 0, date: "", isToday: false }
       };
       
       for (let week = 0; week < 4; week++) {
@@ -224,7 +230,8 @@ export default function Analytics() {
         if (dateData) {
           rowData[`week${week + 1}`] = {
             count: dateData.count,
-            date: dateData.displayDate
+            date: dateData.displayDate,
+            isToday: dateData.isToday
           };
         }
       }
@@ -233,7 +240,6 @@ export default function Analytics() {
     setHeatmapData(heatmapRows);
   };
 
-  // Helper function to get last 4 weeks ranges with actual dates
   const getLast4WeeksRangeWithDates = () => {
     const today = new Date();
     const weeks = [];
@@ -263,14 +269,12 @@ export default function Analytics() {
     return weeks;
   };
 
-  // Calculate stats from real data
   const totalQuests = quests.length;
   const totalCompletions = stats.xp ? Math.floor(stats.xp / 10) : 0;
   const currentStreak = stats.streak || 0;
   const bestStreak = stats.streak || 0;
   const level = Math.floor((stats.xp || 0) / 100) + 1;
 
-  // Custom tooltip for weekly chart
   const WeeklyTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
@@ -286,7 +290,6 @@ export default function Analytics() {
     return null;
   };
 
-  // Pro feature lock overlay
   if (!isPro && !loading) {
     return (
       <div className="analytics-lock">
@@ -323,7 +326,6 @@ export default function Analytics() {
     );
   }
 
-  // If no quests, show empty state
   if (totalQuests === 0) {
     return (
       <div className="analytics-page">
@@ -348,13 +350,11 @@ export default function Analytics() {
   return (
     <div className="analytics-page">
       <div className="analytics-container">
-        {/* Header */}
         <div className="analytics-header">
           <h1>📊 Analytics Dashboard</h1>
           <p>Track your progress, analyze patterns, and level up your habits</p>
         </div>
 
-        {/* Stats Cards - REAL DATA */}
         <div className="stats-grid-analytics">
           <div className="stat-card-analytics cyan">
             <div className="stat-icon">📋</div>
@@ -386,27 +386,23 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Weekly Progress Chart - REAL DATA WITH ACTUAL DATES */}
         <div className="chart-card">
           <div className="chart-header">
             <h3>📈 Weekly Progress</h3>
             <span>Last 7 days</span>
           </div>
-          <div className="github-chart-container">
-            <ResponsiveContainer width="100%" height={280}>
-              <ComposedChart data={weeklyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2a4a" />
-                <XAxis dataKey="day" stroke="#94a3b8" tick={{ fontSize: 11 }} />
-                <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} />
-                <Tooltip content={<WeeklyTooltip />} />
-                <Bar dataKey="completed" fill="#00e5ff" radius={[4, 4, 0, 0]} barSize={30} />
-                <Line type="monotone" dataKey="percentage" stroke="#a855f7" strokeWidth={2} dot={{ fill: "#a855f7", r: 4 }} />
-              </ComposedChart>
-            </ResponsiveContainer>
-          </div>
+          <ResponsiveContainer width="100%" height={280}>
+            <ComposedChart data={weeklyData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#1f2a4a" />
+              <XAxis dataKey="day" stroke="#94a3b8" tick={{ fontSize: 11 }} />
+              <YAxis stroke="#94a3b8" tick={{ fontSize: 11 }} />
+              <Tooltip content={<WeeklyTooltip />} />
+              <Bar dataKey="completed" fill="#00e5ff" radius={[4, 4, 0, 0]} barSize={30} />
+              <Line type="monotone" dataKey="percentage" stroke="#a855f7" strokeWidth={2} dot={{ fill: "#a855f7", r: 4 }} />
+            </ComposedChart>
+          </ResponsiveContainer>
         </div>
 
-        {/* Monthly Progress & Habit Breakdown - REAL DATA */}
         <div className="two-columns">
           <div className="chart-card">
             <div className="chart-header">
@@ -472,51 +468,52 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Activity Heatmap - FIXED WITH CORRECT WEEK ORDER */}
+        {/* Enhanced Activity Heatmap */}
         <div className="chart-card full-width">
           <div className="chart-header">
             <h3>🔥 Activity Heatmap</h3>
             <span>Daily completions over 4 weeks</span>
           </div>
           <div className="heatmap-container">
-            {/* Week labels with date ranges - Week 1 (most recent) to Week 4 (oldest) */}
-            <div className="heatmap-week-labels">
-              <div className="week-label-spacer"></div>
+            {/* Week labels header */}
+            <div className="heatmap-week-header">
+              <div className="week-header-spacer"></div>
               {heatmapWeekLabels.map((week) => (
-                <div key={week.id} className="week-label" title={week.range}>
-                  {week.label}
-                  <span className="week-range">{week.range}</span>
+                <div key={week.id} className="week-header-cell">
+                  <div className="week-title">{week.label}</div>
+                  <div className="week-date-range">{week.range}</div>
                 </div>
               ))}
             </div>
             
-            {/* Heatmap grid */}
-            <div className="heatmap-grid">
+            {/* Heatmap body */}
+            <div className="heatmap-body">
               {heatmapData.map((row, idx) => (
                 <div key={idx} className="heatmap-row">
-                  <span className="heatmap-day-label">{row.day}</span>
+                  <div className="heatmap-day-name">{row.day}</div>
                   <div className="heatmap-cells">
                     <div 
-                      className={`heatmap-cell level-${Math.min(5, row.week1.count)}`} 
-                      title={`Week 1 (${row.week1.date}): ${row.week1.count} completion${row.week1.count !== 1 ? 's' : ''}`}
+                      className={`heatmap-cell ${row.week1.isToday ? 'today-cell' : ''} level-${Math.min(5, row.week1.count)}`} 
+                      title={`Week 1 - ${row.day} ${row.week1.date}: ${row.week1.count} completion${row.week1.count !== 1 ? 's' : ''}`}
                     >
                       {row.week1.count > 0 && <span className="heatmap-value">{row.week1.count}</span>}
+                      {row.week1.isToday && <span className="today-indicator">●</span>}
                     </div>
                     <div 
-                      className={`heatmap-cell level-${Math.min(5, row.week2.count)}`} 
-                      title={`Week 2 (${row.week2.date}): ${row.week2.count} completion${row.week2.count !== 1 ? 's' : ''}`}
+                      className={`heatmap-cell ${row.week2.isToday ? 'today-cell' : ''} level-${Math.min(5, row.week2.count)}`} 
+                      title={`Week 2 - ${row.day} ${row.week2.date}: ${row.week2.count} completion${row.week2.count !== 1 ? 's' : ''}`}
                     >
                       {row.week2.count > 0 && <span className="heatmap-value">{row.week2.count}</span>}
                     </div>
                     <div 
-                      className={`heatmap-cell level-${Math.min(5, row.week3.count)}`} 
-                      title={`Week 3 (${row.week3.date}): ${row.week3.count} completion${row.week3.count !== 1 ? 's' : ''}`}
+                      className={`heatmap-cell ${row.week3.isToday ? 'today-cell' : ''} level-${Math.min(5, row.week3.count)}`} 
+                      title={`Week 3 - ${row.day} ${row.week3.date}: ${row.week3.count} completion${row.week3.count !== 1 ? 's' : ''}`}
                     >
                       {row.week3.count > 0 && <span className="heatmap-value">{row.week3.count}</span>}
                     </div>
                     <div 
-                      className={`heatmap-cell level-${Math.min(5, row.week4.count)}`} 
-                      title={`Week 4 (${row.week4.date}): ${row.week4.count} completion${row.week4.count !== 1 ? 's' : ''}`}
+                      className={`heatmap-cell ${row.week4.isToday ? 'today-cell' : ''} level-${Math.min(5, row.week4.count)}`} 
+                      title={`Week 4 - ${row.day} ${row.week4.date}: ${row.week4.count} completion${row.week4.count !== 1 ? 's' : ''}`}
                     >
                       {row.week4.count > 0 && <span className="heatmap-value">{row.week4.count}</span>}
                     </div>
@@ -524,22 +521,28 @@ export default function Analytics() {
                 </div>
               ))}
             </div>
+            
+            {/* Today indicator legend */}
+            <div className="heatmap-today-legend">
+              <span className="today-dot">●</span>
+              <span>Today's date</span>
+            </div>
           </div>
+          
           <div className="heatmap-legend">
             <span>Less</span>
             <div className="legend-colors">
-              <div className="legend-color level-0" title="0 completions"></div>
-              <div className="legend-color level-1" title="1 completion"></div>
-              <div className="legend-color level-2" title="2 completions"></div>
-              <div className="legend-color level-3" title="3 completions"></div>
-              <div className="legend-color level-4" title="4 completions"></div>
-              <div className="legend-color level-5" title="5+ completions"></div>
+              <div className="legend-color level-0"></div>
+              <div className="legend-color level-1"></div>
+              <div className="legend-color level-2"></div>
+              <div className="legend-color level-3"></div>
+              <div className="legend-color level-4"></div>
+              <div className="legend-color level-5"></div>
             </div>
             <span>More</span>
           </div>
         </div>
 
-        {/* XP Progression */}
         <div className="chart-card">
           <div className="chart-header">
             <h3>⭐ XP Progression</h3>
@@ -561,7 +564,6 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Pro Badge */}
         <div className="pro-badge-analytics">
           <span>⭐ PRO MEMBER</span>
           <p>You have access to all premium features</p>
