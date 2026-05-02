@@ -78,13 +78,11 @@ export default function Analytics() {
     const today = new Date();
     const weekData = [];
     
-    // Get the actual day names for the last 7 days
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
       const dateStr = date.toISOString().split("T")[0];
       
-      // Get day name (Mon, Tue, etc.)
       const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       const dayName = dayNames[date.getDay()];
       
@@ -118,7 +116,6 @@ export default function Analytics() {
       let weekCompleted = 0;
       let weekTotal = 0;
       
-      // Iterate through each day in the week range
       for (const dateStr of weekRange.dates) {
         let dayCompleted = 0;
         userQuests.forEach(quest => {
@@ -158,52 +155,64 @@ export default function Analytics() {
     });
     setHabitBreakdown(breakdown);
     
-    // Heatmap data - last 4 weeks with ACTUAL WEEK LABELS
+    // Heatmap data - last 4 weeks with PROPER ORDER (Week 1 = most recent)
     const todayDate = new Date();
-    const weekLabels = [];
     const heatmapRows = [];
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const weekLabels = [];
     
-    // Create week labels with actual date ranges
+    // Create week labels with correct date ranges (Week 1 = most recent, Week 4 = oldest)
     for (let week = 0; week < 4; week++) {
-      const weekStart = new Date(todayDate);
-      weekStart.setDate(todayDate.getDate() - (week * 7 + 6));
       const weekEnd = new Date(todayDate);
       weekEnd.setDate(todayDate.getDate() - (week * 7));
+      const weekStart = new Date(weekEnd);
+      weekStart.setDate(weekEnd.getDate() - 6);
       
       const startStr = `${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
       const endStr = `${weekEnd.getMonth() + 1}/${weekEnd.getDate()}`;
+      
       weekLabels.push({
         id: week,
         label: `Week ${week + 1}`,
-        range: `${startStr} - ${endStr}`
+        range: `${startStr} - ${endStr}`,
+        startDate: weekStart,
+        endDate: weekEnd
       });
     }
-    setHeatmapWeekLabels(weekLabels.reverse());
+    setHeatmapWeekLabels(weekLabels);
     
-    // Get dates for last 4 weeks
-    const heatmapDates = [];
+    // Collect all dates for the last 4 weeks
+    const allDates = [];
     for (let week = 0; week < 4; week++) {
+      const weekLabel = weekLabels[week];
       for (let day = 0; day < 7; day++) {
-        const date = new Date(todayDate);
-        date.setDate(todayDate.getDate() - (week * 7 + (6 - day)));
+        const date = new Date(weekLabel.startDate);
+        date.setDate(weekLabel.startDate.getDate() + day);
         const dateStr = date.toISOString().split("T")[0];
         const displayDate = `${date.getMonth() + 1}/${date.getDate()}`;
-        heatmapDates.push({ 
-          week: 3 - week, 
-          day, 
-          dateStr, 
-          displayDate,
-          dayName: dayNames[day] 
+        const dayName = dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1];
+        
+        let completedCount = 0;
+        userQuests.forEach(quest => {
+          if (quest.logs?.includes(dateStr)) {
+            completedCount++;
+          }
+        });
+        
+        allDates.push({
+          week: week,
+          dayName: dayName,
+          displayDate: displayDate,
+          count: completedCount
         });
       }
     }
     
-    // Group by day name and create heatmap rows with tooltip info
+    // Group by day name
     for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
       const dayName = dayNames[dayIdx];
-      const rowData = { 
-        day: dayName, 
+      const rowData = {
+        day: dayName,
         week1: { count: 0, date: "" },
         week2: { count: 0, date: "" },
         week3: { count: 0, date: "" },
@@ -211,17 +220,11 @@ export default function Analytics() {
       };
       
       for (let week = 0; week < 4; week++) {
-        const dateObj = heatmapDates.find(d => d.week === week && d.day === dayIdx);
-        if (dateObj) {
-          let completedCount = 0;
-          userQuests.forEach(quest => {
-            if (quest.logs?.includes(dateObj.dateStr)) {
-              completedCount++;
-            }
-          });
+        const dateData = allDates.find(d => d.week === week && d.dayName === dayName);
+        if (dateData) {
           rowData[`week${week + 1}`] = {
-            count: completedCount,
-            date: dateObj.displayDate
+            count: dateData.count,
+            date: dateData.displayDate
           };
         }
       }
@@ -235,11 +238,11 @@ export default function Analytics() {
     const today = new Date();
     const weeks = [];
     
-    for (let w = 3; w >= 0; w--) {
-      const startDate = new Date(today);
-      startDate.setDate(today.getDate() - (w * 7 + 6));
+    for (let w = 0; w < 4; w++) {
       const endDate = new Date(today);
       endDate.setDate(today.getDate() - (w * 7));
+      const startDate = new Date(endDate);
+      startDate.setDate(endDate.getDate() - 6);
       
       const startStr = `${startDate.getMonth() + 1}/${startDate.getDate()}`;
       const endStr = `${endDate.getMonth() + 1}/${endDate.getDate()}`;
@@ -252,7 +255,7 @@ export default function Analytics() {
       }
       
       weeks.push({
-        label: `Week ${4 - w}`,
+        label: `Week ${w + 1}`,
         dateRange: `${startStr} - ${endStr}`,
         dates: dates
       });
@@ -281,18 +284,6 @@ export default function Analytics() {
       );
     }
     return null;
-  };
-
-  // Custom heatmap tooltip
-  const HeatmapTooltip = ({ count, date, week }) => {
-    if (count === 0) return null;
-    return (
-      <div className="heatmap-tooltip">
-        <p className="tooltip-date">{date}</p>
-        <p className="tooltip-completed">✅ {count} quest{count !== 1 ? 's' : ''} completed</p>
-        <p className="tooltip-week">📅 {week}</p>
-      </div>
-    );
   };
 
   // Pro feature lock overlay
@@ -481,14 +472,14 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Activity Heatmap - IMPROVED WITH DATE LABELS */}
+        {/* Activity Heatmap - FIXED WITH CORRECT WEEK ORDER */}
         <div className="chart-card full-width">
           <div className="chart-header">
             <h3>🔥 Activity Heatmap</h3>
             <span>Daily completions over 4 weeks</span>
           </div>
           <div className="heatmap-container">
-            {/* Week labels with date ranges */}
+            {/* Week labels with date ranges - Week 1 (most recent) to Week 4 (oldest) */}
             <div className="heatmap-week-labels">
               <div className="week-label-spacer"></div>
               {heatmapWeekLabels.map((week) => (
