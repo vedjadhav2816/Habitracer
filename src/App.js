@@ -7,6 +7,7 @@ import Analytics from "./pages/Analytics";
 import Upgrade from "./pages/Upgrade";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
+import Contact from "./pages/Contact";
 
 
 
@@ -23,6 +24,7 @@ function App() {
         <Route path="/upgrade" element={<Upgrade />} />
         <Route path="/payment-success" element={<PaymentSuccess />} /> 
         <Route path="/privacy" element={<PrivacyPolicy />} />
+        <Route path="/contact" element={<Contact />} />
       </Routes>
     </Router>
   );
