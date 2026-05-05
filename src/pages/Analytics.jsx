@@ -152,13 +152,13 @@ export default function Analytics() {
     });
     setHabitBreakdown(breakdown);
     
-    // Heatmap data - IMPROVED WITH BETTER VISUALIZATION
+    // ========== FIXED HEATMAP WITH CHRONOLOGICAL ORDER (Week 1 = most recent, left to right) ==========
     const todayDate = new Date();
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const weekLabels = [];
     const heatmapRows = [];
     
-    // Create week labels with date ranges
+    // Create week labels with date ranges - Week 1 = most recent (LEFT)
     for (let week = 0; week < 4; week++) {
       const weekEnd = new Date(todayDate);
       weekEnd.setDate(todayDate.getDate() - (week * 7));
@@ -178,11 +178,9 @@ export default function Analytics() {
     }
     setHeatmapWeekLabels(weekLabels);
     
-    // Get today's date info for highlighting
     const todayStr = todayDate.toISOString().split("T")[0];
-    const todayMonthDay = `${todayDate.getMonth() + 1}/${todayDate.getDate()}`;
     
-    // Collect all dates for the last 4 weeks with additional metadata
+    // Collect all dates for the last 4 weeks
     const allDates = [];
     for (let week = 0; week < 4; week++) {
       const weekLabel = weekLabels[week];
@@ -193,7 +191,6 @@ export default function Analytics() {
         const displayDate = `${date.getMonth() + 1}/${date.getDate()}`;
         let dayName = dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1];
         
-        // Fix Sunday mapping
         if (date.getDay() === 0) dayName = "Sun";
         
         let completedCount = 0;
@@ -214,7 +211,7 @@ export default function Analytics() {
       }
     }
     
-    // Group by day name
+    // Group by day name - creates rows for Mon, Tue, Wed, etc.
     for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
       const dayName = dayNames[dayIdx];
       const rowData = {
@@ -468,14 +465,14 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Enhanced Activity Heatmap */}
+        {/* Activity Heatmap - CHRONOLOGICAL ORDER (Week 1 = most recent, LEFT) */}
         <div className="chart-card full-width">
           <div className="chart-header">
             <h3>🔥 Activity Heatmap</h3>
-            <span>Daily completions over 4 weeks</span>
+            <span>Daily completions over 4 weeks (Week 1 = most recent)</span>
           </div>
-          <div className="heatmap-container">
-            {/* Week labels header */}
+          <div className="heatmap-wrapper">
+            {/* Week labels header - Week 1 on LEFT */}
             <div className="heatmap-week-header">
               <div className="week-header-spacer"></div>
               {heatmapWeekLabels.map((week) => (
@@ -486,34 +483,34 @@ export default function Analytics() {
               ))}
             </div>
             
-            {/* Heatmap body */}
-            <div className="heatmap-body">
+            {/* Heatmap grid */}
+            <div className="heatmap-grid">
               {heatmapData.map((row, idx) => (
                 <div key={idx} className="heatmap-row">
                   <div className="heatmap-day-name">{row.day}</div>
                   <div className="heatmap-cells">
                     <div 
                       className={`heatmap-cell ${row.week1.isToday ? 'today-cell' : ''} level-${Math.min(5, row.week1.count)}`} 
-                      title={`Week 1 - ${row.day} ${row.week1.date}: ${row.week1.count} completion${row.week1.count !== 1 ? 's' : ''}`}
+                      title={`Week 1 (${row.week1.date}): ${row.week1.count} completion${row.week1.count !== 1 ? 's' : ''}`}
                     >
                       {row.week1.count > 0 && <span className="heatmap-value">{row.week1.count}</span>}
                       {row.week1.isToday && <span className="today-indicator">●</span>}
                     </div>
                     <div 
                       className={`heatmap-cell ${row.week2.isToday ? 'today-cell' : ''} level-${Math.min(5, row.week2.count)}`} 
-                      title={`Week 2 - ${row.day} ${row.week2.date}: ${row.week2.count} completion${row.week2.count !== 1 ? 's' : ''}`}
+                      title={`Week 2 (${row.week2.date}): ${row.week2.count} completion${row.week2.count !== 1 ? 's' : ''}`}
                     >
                       {row.week2.count > 0 && <span className="heatmap-value">{row.week2.count}</span>}
                     </div>
                     <div 
                       className={`heatmap-cell ${row.week3.isToday ? 'today-cell' : ''} level-${Math.min(5, row.week3.count)}`} 
-                      title={`Week 3 - ${row.day} ${row.week3.date}: ${row.week3.count} completion${row.week3.count !== 1 ? 's' : ''}`}
+                      title={`Week 3 (${row.week3.date}): ${row.week3.count} completion${row.week3.count !== 1 ? 's' : ''}`}
                     >
                       {row.week3.count > 0 && <span className="heatmap-value">{row.week3.count}</span>}
                     </div>
                     <div 
                       className={`heatmap-cell ${row.week4.isToday ? 'today-cell' : ''} level-${Math.min(5, row.week4.count)}`} 
-                      title={`Week 4 - ${row.day} ${row.week4.date}: ${row.week4.count} completion${row.week4.count !== 1 ? 's' : ''}`}
+                      title={`Week 4 (${row.week4.date}): ${row.week4.count} completion${row.week4.count !== 1 ? 's' : ''}`}
                     >
                       {row.week4.count > 0 && <span className="heatmap-value">{row.week4.count}</span>}
                     </div>
@@ -522,7 +519,6 @@ export default function Analytics() {
               ))}
             </div>
             
-            {/* Today indicator legend */}
             <div className="heatmap-today-legend">
               <span className="today-dot">●</span>
               <span>Today's date</span>
