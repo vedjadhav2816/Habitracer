@@ -152,13 +152,14 @@ export default function Analytics() {
     });
     setHabitBreakdown(breakdown);
     
-    // ========== FIXED HEATMAP WITH CHRONOLOGICAL ORDER (Week 1 = most recent, left to right) ==========
+    // ========== FIXED HEATMAP WITH CORRECT DAY ORDER (Mon, Tue, Wed, Thu, Fri, Sat, Sun) ==========
     const todayDate = new Date();
+    // IMPORTANT: Days in correct order - Monday first!
     const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const weekLabels = [];
     const heatmapRows = [];
     
-    // Create week labels with date ranges - Week 1 = most recent (LEFT)
+    // Create week labels with date ranges
     for (let week = 0; week < 4; week++) {
       const weekEnd = new Date(todayDate);
       weekEnd.setDate(todayDate.getDate() - (week * 7));
@@ -189,9 +190,17 @@ export default function Analytics() {
         date.setDate(weekLabel.startDate.getDate() + day);
         const dateStr = date.toISOString().split("T")[0];
         const displayDate = `${date.getMonth() + 1}/${date.getDate()}`;
-        let dayName = dayNames[date.getDay() === 0 ? 6 : date.getDay() - 1];
         
-        if (date.getDay() === 0) dayName = "Sun";
+        // Get correct day name (Mon-Sun)
+        let dayName = "";
+        const dayIndex = date.getDay();
+        if (dayIndex === 1) dayName = "Mon";
+        else if (dayIndex === 2) dayName = "Tue";
+        else if (dayIndex === 3) dayName = "Wed";
+        else if (dayIndex === 4) dayName = "Thu";
+        else if (dayIndex === 5) dayName = "Fri";
+        else if (dayIndex === 6) dayName = "Sat";
+        else if (dayIndex === 0) dayName = "Sun";
         
         let completedCount = 0;
         userQuests.forEach(quest => {
@@ -211,7 +220,7 @@ export default function Analytics() {
       }
     }
     
-    // Group by day name - creates rows for Mon, Tue, Wed, etc.
+    // Create rows for each day in CORRECT ORDER (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
     for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
       const dayName = dayNames[dayIdx];
       const rowData = {
@@ -465,14 +474,14 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Activity Heatmap - CHRONOLOGICAL ORDER (Week 1 = most recent, LEFT) */}
+        {/* Activity Heatmap - FIXED DAY ORDER */}
         <div className="chart-card full-width">
           <div className="chart-header">
             <h3>🔥 Activity Heatmap</h3>
             <span>Daily completions over 4 weeks (Week 1 = most recent)</span>
           </div>
           <div className="heatmap-wrapper">
-            {/* Week labels header - Week 1 on LEFT */}
+            {/* Week labels header */}
             <div className="heatmap-week-header">
               <div className="week-header-spacer"></div>
               {heatmapWeekLabels.map((week) => (
@@ -483,7 +492,7 @@ export default function Analytics() {
               ))}
             </div>
             
-            {/* Heatmap grid */}
+            {/* Heatmap grid - days in correct order Mon-Sun */}
             <div className="heatmap-grid">
               {heatmapData.map((row, idx) => (
                 <div key={idx} className="heatmap-row">
