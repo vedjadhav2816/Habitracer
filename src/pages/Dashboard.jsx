@@ -575,19 +575,26 @@ export default function Dashboard() {
       });
     });
 
-    // STREAK
+    // 🔥 FIXED STREAK CALCULATION - Count days where at least ONE quest was completed
     let streak = 0;
     for (let i = 0; i < 30; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const key = d.toISOString().split("T")[0];
-
-      const allDone =
-        updated.length > 0 &&
-        updated.every(q => q.logs.includes(key));
-
-      if (allDone) streak++;
-      else break;
+      
+      // Check if ANY quest was completed on this day
+      let anyCompleted = false;
+      updated.forEach(q => {
+        if (q.logs?.includes(key)) {
+          anyCompleted = true;
+        }
+      });
+      
+      if (anyCompleted) {
+        streak++;
+      } else {
+        break;
+      }
     }
 
     setCharacter(newCharacter);
@@ -602,9 +609,11 @@ export default function Dashboard() {
 
    // UI CIRCLE - FIXED FOR MOBILE
   const Circle = ({ percent, label, color }) => {
+    // Ensure percent is a valid number between 0 and 100
+    const validPercent = Math.min(100, Math.max(0, percent || 0));
     const radius = 45;
-    const normalized = 2 * Math.PI * radius;
-    const offset = normalized - (percent / 100) * normalized;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (validPercent / 100) * circumference;
 
     return (
       <div className="circle-box glow">
@@ -624,19 +633,21 @@ export default function Dashboard() {
             stroke={color}
             strokeWidth="6"
             fill="transparent"
-            strokeDasharray={normalized}
+            strokeDasharray={circumference}
             strokeDashoffset={offset}
             strokeLinecap="round"
             className="circle-anim"
+            transform="rotate(-90 60 60)"
           />
         </svg>
         <div className="circle-text">
-          {percent}%
+          {validPercent}%
           <span>{label}</span>
         </div>
       </div>
     );
   };
+  
   // Active days calculation
   const activeDays = Object.keys(quests.reduce((acc, q) => {
     q.logs?.forEach(log => acc[log] = true);
@@ -730,9 +741,12 @@ export default function Dashboard() {
               </div>
 
               <div className="circles">
-                <Circle percent={stats.today * 20} label="Daily" color="#00e5ff" />
+                {/* Daily circle: percentage of today's completed quests */}
+                <Circle percent={quests.length > 0 ? (stats.today / quests.length) * 100 : 0} label="Daily" color="#00e5ff" />
+                {/* Weekly circle: week completion percentage */}
                 <Circle percent={stats.week} label="Weekly" color="#a855f7" />
-                <Circle percent={Math.min(stats.xp, 100)} label="Overall" color="#22c55e" />
+                {/* Overall circle: XP progress to next level */}
+                <Circle percent={xpPercent} label="Overall" color="#22c55e" />
               </div>
 
               <div className="activity">
