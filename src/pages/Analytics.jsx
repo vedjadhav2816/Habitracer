@@ -77,14 +77,17 @@ export default function Analytics() {
     return new Date(year, month + 1, 0).getDate();
   };
 
+  // Get start day of month where Monday = 0, Tuesday = 1, ..., Sunday = 6
   const getStartDayOfMonth = (year, month) => {
     let day = new Date(year, month, 1).getDay();
+    // Convert from Sunday=0 to Monday=0
     return day === 0 ? 6 : day - 1;
   };
 
   const generateEmptyHeatmapData = () => {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const monthsData = [];
+    const today = new Date();
     
     for (let monthIdx = 0; monthIdx < 12; monthIdx++) {
       const daysInMonth = getDaysInMonth(selectedYear, monthIdx);
@@ -101,10 +104,14 @@ export default function Analytics() {
           cellIndex = 0;
         }
         
+        const isToday = today.getFullYear() === selectedYear && 
+                       today.getMonth() === monthIdx && 
+                       today.getDate() === currentDay;
+        
         currentWeek[cellIndex] = {
           day: currentDay,
           completions: 0,
-          isToday: false,
+          isToday: isToday,
           dateStr: `${selectedYear}-${String(monthIdx + 1).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`,
           fullDate: `${monthIdx + 1}/${currentDay}`
         };
@@ -133,6 +140,7 @@ export default function Analytics() {
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
     const completionMap = new Map();
     
+    // Build completion map from quest logs
     userQuests.forEach(quest => {
       if (quest.logs && Array.isArray(quest.logs)) {
         quest.logs.forEach(dateStr => {
@@ -147,6 +155,8 @@ export default function Analytics() {
 
     const monthsData = [];
     const today = new Date();
+    // Use local date for today comparison
+    const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     
     for (let monthIdx = 0; monthIdx < 12; monthIdx++) {
       const daysInMonth = getDaysInMonth(selectedYear, monthIdx);
@@ -163,12 +173,9 @@ export default function Analytics() {
           cellIndex = 0;
         }
         
-        const date = new Date(selectedYear, monthIdx, currentDay);
-        const dateStr = date.toISOString().split("T")[0];
+        const dateStr = `${selectedYear}-${String(monthIdx + 1).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`;
         const completions = completionMap.get(dateStr) || 0;
-        const isToday = today.getFullYear() === selectedYear && 
-                       today.getMonth() === monthIdx && 
-                       today.getDate() === currentDay;
+        const isToday = dateStr === todayStr;
         
         currentWeek[cellIndex] = {
           day: currentDay,
@@ -202,17 +209,22 @@ export default function Analytics() {
     const today = new Date();
     const weekData = [];
     
+    // Generate last 7 days of data (today + 6 previous days)
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today);
       date.setDate(today.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0];
+      // Use local date string without timezone issues
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
       
       const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
       const dayName = dayNames[date.getDay()];
       
       let completedCount = 0;
       userQuests.forEach(quest => {
-        if (quest.logs?.includes(dateStr)) {
+        if (quest.logs && quest.logs.includes(dateStr)) {
           completedCount++;
         }
       });
@@ -231,6 +243,7 @@ export default function Analytics() {
     }
     setWeeklyData(weekData);
     
+    // Monthly overview - last 4 weeks
     const monthData = [];
     const weeks = getLast4WeeksRangeWithDates();
     
@@ -242,7 +255,7 @@ export default function Analytics() {
       for (const dateStr of weekRange.dates) {
         let dayCompleted = 0;
         userQuests.forEach(quest => {
-          if (quest.logs?.includes(dateStr)) {
+          if (quest.logs && quest.logs.includes(dateStr)) {
             dayCompleted++;
           }
         });
@@ -260,6 +273,7 @@ export default function Analytics() {
     }
     setMonthlyData(monthData);
     
+    // Habit breakdown
     const breakdown = [];
     const colors = ["#00e5ff", "#a855f7", "#22c55e", "#ffd84d", "#f97316", "#ef4444", "#06b6d4", "#ec4899"];
     userQuests.forEach((quest, idx) => {
@@ -277,6 +291,7 @@ export default function Analytics() {
     });
     setHabitBreakdown(breakdown);
     
+    // Generate the yearly heatmap
     generateHeatmapData(userQuests);
   };
 
@@ -297,7 +312,10 @@ export default function Analytics() {
       for (let d = 0; d < 7; d++) {
         const date = new Date(startDate);
         date.setDate(startDate.getDate() + d);
-        dates.push(date.toISOString().split("T")[0]);
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        dates.push(`${year}-${month}-${day}`);
       }
       
       weeks.push({
@@ -521,7 +539,7 @@ export default function Analytics() {
         <div className="chart-card full-width">
           <div className="chart-header">
             <h3>🔥 Activity Heatmap — {selectedYear}</h3>
-            <span>Daily completions • January - December</span>
+            <span>Daily completions • January - December (Mon - Sun)</span>
           </div>
           
           <div className="yearly-heatmap-container">
@@ -540,7 +558,7 @@ export default function Analytics() {
                           <div
                             key={dayIdx}
                             className={`heatmap-cell-day ${day ? `level-${level}` : 'empty-cell'} ${day?.isToday ? 'today-cell' : ''}`}
-                            title={day ? `${monthData.monthName} ${day.day}: ${day.completions} completion${day.completions !== 1 ? 's' : ''}` : ''}
+                            title={day ? `${monthData.monthName} ${day.day}: ${day.completions} quest completion${day.completions !== 1 ? 's' : ''}` : ''}
                           >
                             {day && day.completions > 0 && (
                               <span className="day-completion-count">{day.completions}</span>
@@ -571,7 +589,7 @@ export default function Analytics() {
             </div>
             <div className="legend-today">
               <span className="today-dot-legend">●</span>
-              <span>Today</span>
+              <span>Today ({new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})</span>
             </div>
           </div>
         </div>
