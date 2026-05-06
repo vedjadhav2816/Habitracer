@@ -25,8 +25,10 @@ export default function Analytics() {
     const fetchData = async () => {
       try {
         const userId = localStorage.getItem("userId");
+        
+        // If no userId, don't redirect - just show lock screen after loading
         if (!userId) {
-          navigate("/login");
+          setLoading(false);
           return;
         }
 
@@ -71,7 +73,7 @@ export default function Analytics() {
     };
 
     fetchData();
-  }, [navigate]);
+  }, []);
 
   const getDaysInMonth = (year, month) => {
     return new Date(year, month + 1, 0).getDate();
@@ -357,7 +359,18 @@ export default function Analytics() {
     return 5;
   };
 
-  if (!isPro && !loading) {
+  // Show loading state first
+  if (loading) {
+    return (
+      <div className="analytics-loading">
+        <div className="loading-spinner">📊</div>
+        <p>Loading your analytics...</p>
+      </div>
+    );
+  }
+
+  // Show lock screen for non-pro users (including new users without userId)
+  if (!isPro) {
     return (
       <div className="analytics-lock">
         <div className="lock-container">
@@ -380,15 +393,6 @@ export default function Analytics() {
           </button>
           <p className="lock-subtitle">Join 12,400+ heroes who already upgraded!</p>
         </div>
-      </div>
-    );
-  }
-
-  if (loading) {
-    return (
-      <div className="analytics-loading">
-        <div className="loading-spinner">📊</div>
-        <p>Loading your analytics...</p>
       </div>
     );
   }
