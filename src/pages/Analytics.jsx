@@ -17,9 +17,9 @@ export default function Analytics() {
   const [weeklyData, setWeeklyData] = useState([]);
   const [habitBreakdown, setHabitBreakdown] = useState([]);
   const [heatmapData, setHeatmapData] = useState([]);
-  const [heatmapWeekLabels, setHeatmapWeekLabels] = useState([]);
   const [monthlyData, setMonthlyData] = useState([]);
   const [hasRealData, setHasRealData] = useState(false);
+  const [selectedYear] = useState(2026);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,10 +58,13 @@ export default function Analytics() {
           
           if (hasData) {
             generateRealAnalyticsData(userQuests);
+          } else {
+            generateEmptyHeatmapData();
           }
         }
       } catch (err) {
         console.error("Error fetching analytics data:", err);
+        generateEmptyHeatmapData();
       } finally {
         setLoading(false);
       }
@@ -70,8 +73,132 @@ export default function Analytics() {
     fetchData();
   }, [navigate]);
 
+  const getDaysInMonth = (year, month) => {
+    return new Date(year, month + 1, 0).getDate();
+  };
+
+  const getStartDayOfMonth = (year, month) => {
+    let day = new Date(year, month, 1).getDay();
+    return day === 0 ? 6 : day - 1;
+  };
+
+  const generateEmptyHeatmapData = () => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const monthsData = [];
+    
+    for (let monthIdx = 0; monthIdx < 12; monthIdx++) {
+      const daysInMonth = getDaysInMonth(selectedYear, monthIdx);
+      const startDayOfWeek = getStartDayOfMonth(selectedYear, monthIdx);
+      const weeks = [];
+      let currentWeek = new Array(7).fill(null);
+      let cellIndex = startDayOfWeek;
+      let currentDay = 1;
+      
+      while (currentDay <= daysInMonth) {
+        if (cellIndex >= 7) {
+          weeks.push([...currentWeek]);
+          currentWeek = new Array(7).fill(null);
+          cellIndex = 0;
+        }
+        
+        currentWeek[cellIndex] = {
+          day: currentDay,
+          completions: 0,
+          isToday: false,
+          dateStr: `${selectedYear}-${String(monthIdx + 1).padStart(2, '0')}-${String(currentDay).padStart(2, '0')}`,
+          fullDate: `${monthIdx + 1}/${currentDay}`
+        };
+        
+        currentDay++;
+        cellIndex++;
+      }
+      
+      if (currentWeek.some(cell => cell !== null)) {
+        weeks.push([...currentWeek]);
+      }
+      
+      monthsData.push({
+        monthName: months[monthIdx],
+        monthIndex: monthIdx,
+        weeks: weeks,
+        daysInMonth: daysInMonth,
+        startDay: startDayOfWeek
+      });
+    }
+    
+    setHeatmapData(monthsData);
+  };
+
+  const generateHeatmapData = (userQuests) => {
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    const completionMap = new Map();
+    
+    userQuests.forEach(quest => {
+      if (quest.logs && Array.isArray(quest.logs)) {
+        quest.logs.forEach(dateStr => {
+          if (completionMap.has(dateStr)) {
+            completionMap.set(dateStr, completionMap.get(dateStr) + 1);
+          } else {
+            completionMap.set(dateStr, 1);
+          }
+        });
+      }
+    });
+
+    const monthsData = [];
+    const today = new Date();
+    
+    for (let monthIdx = 0; monthIdx < 12; monthIdx++) {
+      const daysInMonth = getDaysInMonth(selectedYear, monthIdx);
+      const startDayOfWeek = getStartDayOfMonth(selectedYear, monthIdx);
+      const weeks = [];
+      let currentWeek = new Array(7).fill(null);
+      let cellIndex = startDayOfWeek;
+      let currentDay = 1;
+      
+      while (currentDay <= daysInMonth) {
+        if (cellIndex >= 7) {
+          weeks.push([...currentWeek]);
+          currentWeek = new Array(7).fill(null);
+          cellIndex = 0;
+        }
+        
+        const date = new Date(selectedYear, monthIdx, currentDay);
+        const dateStr = date.toISOString().split("T")[0];
+        const completions = completionMap.get(dateStr) || 0;
+        const isToday = today.getFullYear() === selectedYear && 
+                       today.getMonth() === monthIdx && 
+                       today.getDate() === currentDay;
+        
+        currentWeek[cellIndex] = {
+          day: currentDay,
+          completions: completions,
+          isToday: isToday,
+          dateStr: dateStr,
+          fullDate: `${monthIdx + 1}/${currentDay}`
+        };
+        
+        currentDay++;
+        cellIndex++;
+      }
+      
+      if (currentWeek.some(cell => cell !== null)) {
+        weeks.push([...currentWeek]);
+      }
+      
+      monthsData.push({
+        monthName: months[monthIdx],
+        monthIndex: monthIdx,
+        weeks: weeks,
+        daysInMonth: daysInMonth,
+        startDay: startDayOfWeek
+      });
+    }
+    
+    setHeatmapData(monthsData);
+  };
+
   const generateRealAnalyticsData = (userQuests) => {
-    // Weekly data - last 7 days
     const today = new Date();
     const weekData = [];
     
@@ -104,7 +231,6 @@ export default function Analytics() {
     }
     setWeeklyData(weekData);
     
-    // Monthly data
     const monthData = [];
     const weeks = getLast4WeeksRangeWithDates();
     
@@ -134,7 +260,6 @@ export default function Analytics() {
     }
     setMonthlyData(monthData);
     
-    // Habit breakdown
     const breakdown = [];
     const colors = ["#00e5ff", "#a855f7", "#22c55e", "#ffd84d", "#f97316", "#ef4444", "#06b6d4", "#ec4899"];
     userQuests.forEach((quest, idx) => {
@@ -152,98 +277,7 @@ export default function Analytics() {
     });
     setHabitBreakdown(breakdown);
     
-    // ========== FIXED HEATMAP WITH CORRECT DAY ORDER (Mon, Tue, Wed, Thu, Fri, Sat, Sun) ==========
-    const todayDate = new Date();
-    // IMPORTANT: Days in correct order - Monday first!
-    const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
-    const weekLabels = [];
-    const heatmapRows = [];
-    
-    // Create week labels with date ranges
-    for (let week = 0; week < 4; week++) {
-      const weekEnd = new Date(todayDate);
-      weekEnd.setDate(todayDate.getDate() - (week * 7));
-      const weekStart = new Date(weekEnd);
-      weekStart.setDate(weekEnd.getDate() - 6);
-      
-      const startStr = `${weekStart.getMonth() + 1}/${weekStart.getDate()}`;
-      const endStr = `${weekEnd.getMonth() + 1}/${weekEnd.getDate()}`;
-      
-      weekLabels.push({
-        id: week,
-        label: `Week ${week + 1}`,
-        range: `${startStr} - ${endStr}`,
-        startDate: weekStart,
-        endDate: weekEnd
-      });
-    }
-    setHeatmapWeekLabels(weekLabels);
-    
-    const todayStr = todayDate.toISOString().split("T")[0];
-    
-    // Collect all dates for the last 4 weeks
-    const allDates = [];
-    for (let week = 0; week < 4; week++) {
-      const weekLabel = weekLabels[week];
-      for (let day = 0; day < 7; day++) {
-        const date = new Date(weekLabel.startDate);
-        date.setDate(weekLabel.startDate.getDate() + day);
-        const dateStr = date.toISOString().split("T")[0];
-        const displayDate = `${date.getMonth() + 1}/${date.getDate()}`;
-        
-        // Get correct day name (Mon-Sun)
-        let dayName = "";
-        const dayIndex = date.getDay();
-        if (dayIndex === 1) dayName = "Mon";
-        else if (dayIndex === 2) dayName = "Tue";
-        else if (dayIndex === 3) dayName = "Wed";
-        else if (dayIndex === 4) dayName = "Thu";
-        else if (dayIndex === 5) dayName = "Fri";
-        else if (dayIndex === 6) dayName = "Sat";
-        else if (dayIndex === 0) dayName = "Sun";
-        
-        let completedCount = 0;
-        userQuests.forEach(quest => {
-          if (quest.logs?.includes(dateStr)) {
-            completedCount++;
-          }
-        });
-        
-        allDates.push({
-          week: week,
-          dayName: dayName,
-          displayDate: displayDate,
-          fullDate: dateStr,
-          count: completedCount,
-          isToday: dateStr === todayStr
-        });
-      }
-    }
-    
-    // Create rows for each day in CORRECT ORDER (Mon, Tue, Wed, Thu, Fri, Sat, Sun)
-    for (let dayIdx = 0; dayIdx < 7; dayIdx++) {
-      const dayName = dayNames[dayIdx];
-      const rowData = {
-        day: dayName,
-        week1: { count: 0, date: "", isToday: false },
-        week2: { count: 0, date: "", isToday: false },
-        week3: { count: 0, date: "", isToday: false },
-        week4: { count: 0, date: "", isToday: false }
-      };
-      
-      for (let week = 0; week < 4; week++) {
-        const dateData = allDates.find(d => d.week === week && d.dayName === dayName);
-        if (dateData) {
-          rowData[`week${week + 1}`] = {
-            count: dateData.count,
-            date: dateData.displayDate,
-            isToday: dateData.isToday
-          };
-        }
-      }
-      heatmapRows.push(rowData);
-    }
-    setHeatmapData(heatmapRows);
+    generateHeatmapData(userQuests);
   };
 
   const getLast4WeeksRangeWithDates = () => {
@@ -294,6 +328,15 @@ export default function Analytics() {
       );
     }
     return null;
+  };
+
+  const getCompletionsLevel = (completions) => {
+    if (completions === 0) return 0;
+    if (completions <= 2) return 1;
+    if (completions <= 4) return 2;
+    if (completions <= 7) return 3;
+    if (completions <= 10) return 4;
+    return 5;
   };
 
   if (!isPro && !loading) {
@@ -474,77 +517,62 @@ export default function Analytics() {
           </div>
         </div>
 
-        {/* Activity Heatmap - FIXED DAY ORDER */}
+        {/* Activity Heatmap - Full Year 2026 */}
         <div className="chart-card full-width">
           <div className="chart-header">
-            <h3>🔥 Activity Heatmap</h3>
-            <span>Daily completions over 4 weeks (Week 1 = most recent)</span>
+            <h3>🔥 Activity Heatmap — {selectedYear}</h3>
+            <span>Daily completions • January - December</span>
           </div>
-          <div className="heatmap-wrapper">
-            {/* Week labels header */}
-            <div className="heatmap-week-header">
-              <div className="week-header-spacer"></div>
-              {heatmapWeekLabels.map((week) => (
-                <div key={week.id} className="week-header-cell">
-                  <div className="week-title">{week.label}</div>
-                  <div className="week-date-range">{week.range}</div>
+          
+          <div className="yearly-heatmap-container">
+            {heatmapData.map((monthData, monthIdx) => (
+              <div key={monthIdx} className="month-heatmap-block">
+                <div className="month-header">{monthData.monthName}</div>
+                <div className="month-weekdays">
+                  <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
                 </div>
-              ))}
-            </div>
-            
-            {/* Heatmap grid - days in correct order Mon-Sun */}
-            <div className="heatmap-grid">
-              {heatmapData.map((row, idx) => (
-                <div key={idx} className="heatmap-row">
-                  <div className="heatmap-day-name">{row.day}</div>
-                  <div className="heatmap-cells">
-                    <div 
-                      className={`heatmap-cell ${row.week1.isToday ? 'today-cell' : ''} level-${Math.min(5, row.week1.count)}`} 
-                      title={`Week 1 (${row.week1.date}): ${row.week1.count} completion${row.week1.count !== 1 ? 's' : ''}`}
-                    >
-                      {row.week1.count > 0 && <span className="heatmap-value">{row.week1.count}</span>}
-                      {row.week1.isToday && <span className="today-indicator">●</span>}
+                <div className="month-weeks">
+                  {monthData.weeks.map((week, weekIdx) => (
+                    <div key={weekIdx} className="heatmap-week-row">
+                      {week.map((day, dayIdx) => {
+                        const level = day ? getCompletionsLevel(day.completions) : 0;
+                        return (
+                          <div
+                            key={dayIdx}
+                            className={`heatmap-cell-day ${day ? `level-${level}` : 'empty-cell'} ${day?.isToday ? 'today-cell' : ''}`}
+                            title={day ? `${monthData.monthName} ${day.day}: ${day.completions} completion${day.completions !== 1 ? 's' : ''}` : ''}
+                          >
+                            {day && day.completions > 0 && (
+                              <span className="day-completion-count">{day.completions}</span>
+                            )}
+                            {day && day.isToday && <span className="today-dot-small">●</span>}
+                          </div>
+                        );
+                      })}
                     </div>
-                    <div 
-                      className={`heatmap-cell ${row.week2.isToday ? 'today-cell' : ''} level-${Math.min(5, row.week2.count)}`} 
-                      title={`Week 2 (${row.week2.date}): ${row.week2.count} completion${row.week2.count !== 1 ? 's' : ''}`}
-                    >
-                      {row.week2.count > 0 && <span className="heatmap-value">{row.week2.count}</span>}
-                    </div>
-                    <div 
-                      className={`heatmap-cell ${row.week3.isToday ? 'today-cell' : ''} level-${Math.min(5, row.week3.count)}`} 
-                      title={`Week 3 (${row.week3.date}): ${row.week3.count} completion${row.week3.count !== 1 ? 's' : ''}`}
-                    >
-                      {row.week3.count > 0 && <span className="heatmap-value">{row.week3.count}</span>}
-                    </div>
-                    <div 
-                      className={`heatmap-cell ${row.week4.isToday ? 'today-cell' : ''} level-${Math.min(5, row.week4.count)}`} 
-                      title={`Week 4 (${row.week4.date}): ${row.week4.count} completion${row.week4.count !== 1 ? 's' : ''}`}
-                    >
-                      {row.week4.count > 0 && <span className="heatmap-value">{row.week4.count}</span>}
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              ))}
-            </div>
-            
-            <div className="heatmap-today-legend">
-              <span className="today-dot">●</span>
-              <span>Today's date</span>
-            </div>
+              </div>
+            ))}
           </div>
           
           <div className="heatmap-legend">
-            <span>Less</span>
-            <div className="legend-colors">
-              <div className="legend-color level-0"></div>
-              <div className="legend-color level-1"></div>
-              <div className="legend-color level-2"></div>
-              <div className="legend-color level-3"></div>
-              <div className="legend-color level-4"></div>
-              <div className="legend-color level-5"></div>
+            <div className="legend-section">
+              <span>Less</span>
+              <div className="legend-colors">
+                <div className="legend-color level-0"></div>
+                <div className="legend-color level-1"></div>
+                <div className="legend-color level-2"></div>
+                <div className="legend-color level-3"></div>
+                <div className="legend-color level-4"></div>
+                <div className="legend-color level-5"></div>
+              </div>
+              <span>More</span>
             </div>
-            <span>More</span>
+            <div className="legend-today">
+              <span className="today-dot-legend">●</span>
+              <span>Today</span>
+            </div>
           </div>
         </div>
 
