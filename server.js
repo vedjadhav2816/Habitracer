@@ -68,9 +68,24 @@ const initTables = async () => {
         google_id VARCHAR(255),
         avatar VARCHAR(10) DEFAULT '🧙',
         bio TEXT,
+        subscription_status VARCHAR(50) DEFAULT 'free',
+        subscription_end_date TIMESTAMP,
+        plan_type VARCHAR(50) DEFAULT 'free',
+        stripe_customer_id VARCHAR(255),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
+    
+    // Add columns if they don't exist (for existing tables)
+    try {
+      await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(50) DEFAULT 'free'`);
+      await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_end_date TIMESTAMP`);
+      await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS plan_type VARCHAR(50) DEFAULT 'free'`);
+      await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id VARCHAR(255)`);
+    } catch (err) {
+      console.log("Column addition error (may already exist):", err.message);
+    }
+    
     console.log("Users table ready ✅");
 
     await query(`
@@ -373,6 +388,106 @@ app.get("/api/check-subscription/:userId", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// ====================== STRIPE WEBHOOK ======================
+// This MUST be before any JSON parsing middleware
+app.post('/api/stripe-webhook', express.raw({type: 'application/json'}), async (req, res) => {
+  const sig = req.headers['stripe-signature'];
+  let event;
+
+  try {
+    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+    
+    if (!webhookSecret) {
+      console.error('❌ STRIPE_WEBHOOK_SECRET is not set in environment variables');
+      return res.status(500).json({ error: 'Webhook secret not configured' });
+    }
+    
+    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
+  } catch (err) {
+    console.log(`⚠️ Webhook signature verification failed:`, err.message);
+    return res.status(400).send(`Webhook Error: ${err.message}`);
+  }
+
+  console.log(`📨 Webhook received: ${event.type}`);
+
+  // Handle the event
+  switch (event.type) {
+    case 'checkout.session.completed':
+      const session = event.data.object;
+      console.log('✅ Payment completed!');
+      console.log('Session ID:', session.id);
+      console.log('Customer ID:', session.customer);
+      console.log('Client Reference ID (userId):', session.client_reference_id);
+      console.log('Metadata:', session.metadata);
+      
+      if (session.client_reference_id && session.metadata) {
+        const userId = session.client_reference_id;
+        const planId = session.metadata.planId;
+        
+        try {
+          let endDate = null;
+          const now = new Date();
+          
+          if (planId === 'monthly') {
+            endDate = new Date(now.setMonth(now.getMonth() + 1));
+          } else if (planId === 'semi') {
+            endDate = new Date(now.setMonth(now.getMonth() + 6));
+          } else if (planId === 'lifetime') {
+            endDate = new Date(now.setFullYear(now.getFullYear() + 100));
+          }
+          
+          console.log(`Updating user ${userId} to ${planId} plan...`);
+          
+          const updateResult = await query(
+            `UPDATE users 
+             SET subscription_status = 'pro', 
+                 subscription_end_date = $1, 
+                 plan_type = $2,
+                 stripe_customer_id = $3
+             WHERE id = $4
+             RETURNING id, name, email, subscription_status, plan_type`,
+            [endDate, planId, session.customer, userId]
+          );
+          
+          if (updateResult.rows.length > 0) {
+            console.log(`✅ User ${userId} (${updateResult.rows[0].name}) upgraded to ${planId}`);
+            console.log('Updated user:', updateResult.rows[0]);
+          } else {
+            console.log(`❌ User ${userId} not found`);
+          }
+        } catch (dbError) {
+          console.error('❌ Database update error:', dbError);
+        }
+      }
+      break;
+      
+    case 'customer.subscription.deleted':
+      const subscription = event.data.object;
+      console.log('Subscription cancelled:', subscription.id);
+      
+      try {
+        await query(
+          `UPDATE users 
+           SET subscription_status = 'free', 
+               subscription_end_date = NULL, 
+               plan_type = 'free'
+           WHERE stripe_customer_id = $1`,
+          [subscription.customer]
+        );
+        console.log('✅ User downgraded to free plan');
+      } catch (dbError) {
+        console.error('❌ Database update error:', dbError);
+      }
+      break;
+      
+    default:
+      console.log(`Unhandled event type: ${event.type}`);
+  }
+
+  // Return a 200 response to acknowledge receipt of the event
+  res.json({ received: true });
 });
 
 const PORT = process.env.PORT || 5000;

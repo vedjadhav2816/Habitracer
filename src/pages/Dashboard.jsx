@@ -235,14 +235,19 @@ export default function Dashboard() {
     { id: "legend", name: "LEGEND", icon: "🌟", condition: () => stats.xp >= 2000 },
   ];
 
-  // 🔥 CHECK SUBSCRIPTION STATUS ON LOAD
+  // 🔥 CHECK SUBSCRIPTION STATUS ON LOAD AND ON PAGE VISIBILITY CHANGE
   useEffect(() => {
-    const checkSubscription = async () => {
+    const checkSubscriptionOnMount = async () => {
       const userId = localStorage.getItem("userId");
       if (userId) {
         try {
-          const res = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${userId}`);
+          const res = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${userId}`, {
+            credentials: "include"
+          });
           const data = await res.json();
+          
+          console.log("Subscription check:", data); // Debug log
+          
           if (data.isPro) {
             setIsPro(true);
             localStorage.setItem("userPlan", data.planType || "pro");
@@ -256,7 +261,21 @@ export default function Dashboard() {
       }
     };
     
-    checkSubscription();
+    // Check immediately on mount
+    checkSubscriptionOnMount();
+    
+    // Also check when the page becomes visible (user returns from Stripe)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        checkSubscriptionOnMount();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
   }, []);
 
   // 🔥 SAVE ALL DATA TO DATABASE

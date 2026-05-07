@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
@@ -21,59 +21,97 @@ export default function Analytics() {
   const [hasRealData, setHasRealData] = useState(false);
   const [selectedYear] = useState(2026);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const userId = localStorage.getItem("userId");
-        
-        // If no userId, don't redirect - just show lock screen after loading
-        if (!userId) {
-          setLoading(false);
-          return;
-        }
-
-        const userRes = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}`);
-        const userData = await userRes.json();
-        setUser(userData);
-        
-        const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${userId}`);
-        const subData = await subRes.json();
-        
-        const proStatus = subData.isPro === true;
-        setIsPro(proStatus);
-        
-        if (proStatus) {
-          localStorage.setItem("userPlan", subData.planType || "pro");
-        } else {
-          localStorage.setItem("userPlan", "free");
-        }
-
-        const questsRes = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}/quests`);
-        const questsData = await questsRes.json();
-        if (questsData.success) {
-          const userQuests = questsData.quests || [];
-          setQuests(userQuests);
-          setStats(questsData.stats || {});
-          
-          const hasData = userQuests.length > 0;
-          setHasRealData(hasData);
-          
-          if (hasData) {
-            generateRealAnalyticsData(userQuests);
-          } else {
-            generateEmptyHeatmapData();
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching analytics data:", err);
-        generateEmptyHeatmapData();
-      } finally {
+  const fetchData = useCallback(async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      
+      // If no userId, don't redirect - just show lock screen after loading
+      if (!userId) {
         setLoading(false);
+        return;
+      }
+
+      const userRes = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}`);
+      const userData = await userRes.json();
+      setUser(userData);
+      
+      const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${userId}`);
+      const subData = await subRes.json();
+      
+      const proStatus = subData.isPro === true;
+      setIsPro(proStatus);
+      
+      if (proStatus) {
+        localStorage.setItem("userPlan", subData.planType || "pro");
+      } else {
+        localStorage.setItem("userPlan", "free");
+      }
+
+      const questsRes = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}/quests`);
+      const questsData = await questsRes.json();
+      if (questsData.success) {
+        const userQuests = questsData.quests || [];
+        setQuests(userQuests);
+        setStats(questsData.stats || {});
+        
+        const hasData = userQuests.length > 0;
+        setHasRealData(hasData);
+        
+        if (hasData) {
+          generateRealAnalyticsData(userQuests);
+        } else {
+          generateEmptyHeatmapData();
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching analytics data:", err);
+      generateEmptyHeatmapData();
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // 🔥 Re-check subscription when component mounts or becomes visible
+  useEffect(() => {
+    const checkPlan = async () => {
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        try {
+          const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${userId}`);
+          const subData = await subRes.json();
+          
+          console.log("Analytics - Re-checking subscription:", subData); // Debug log
+          
+          if (subData.isPro) {
+            setIsPro(true);
+            localStorage.setItem("userPlan", subData.planType || "pro");
+            // Reload data for pro users
+            fetchData();
+          }
+        } catch (err) {
+          console.error("Error re-checking subscription:", err);
+        }
       }
     };
-
-    fetchData();
-  }, []);
+    
+    // Listen for page visibility changes (when user returns from Stripe)
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        console.log("Analytics - Page became visible, re-checking subscription...");
+        checkPlan();
+      }
+    };
+    
+    document.addEventListener('visibilitychange', handleVisibility);
+    
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [fetchData]);
 
   const getDaysInMonth = (year, month) => {
     return new Date(year, month + 1, 0).getDate();
