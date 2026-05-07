@@ -333,35 +333,24 @@ export default function Dashboard() {
   }, []);
 
   // 🔥 FETCH USER AND LOAD SAVED DATA (only once on mount)
-  useEffect(() => {
+   useEffect(() => {
     const fetchUser = async () => {
       try {
         const userId = localStorage.getItem("userId");
 
-        if (!userId) {
-          setUser(null);
-          setLoadingUser(false);
-          setIsLoading(false);
-          return;
-        }
-
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}`);
-        
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        
+        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/user`, {
+          credentials: "include"
+        });
         const data = await res.json();
 
-        if (data && data.name) {
-          setUser(data);
-          
-          // Load saved quests data from database
-          await loadAllDataFromDB(userId);
+        if (data.success && data.user) {
+          const currentUserId = data.user.id.toString();
+          localStorage.setItem("userId", currentUserId);
+          setUser(data.user);
+          await loadAllDataFromDB(currentUserId);
         } else {
           setUser(null);
         }
-
       } catch (err) {
         console.log("User fetch error:", err);
         setUser(null);
@@ -373,6 +362,7 @@ export default function Dashboard() {
 
     fetchUser();
   }, [loadAllDataFromDB]);
+
 
   // Update edit form when user loads (but don't cause re-renders that break typing)
   useEffect(() => {
