@@ -12,6 +12,7 @@ const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const app = express();
 
 // 🔥 STRIPE WEBHOOK - MUST BE BEFORE JSON PARSING MIDDLEWARE
+// This needs the raw body to verify Stripe signatures
 app.post('/api/stripe-webhook', express.raw({type: 'application/json'}), async (req, res) => {
   const sig = req.headers['stripe-signature'];
   let event;
@@ -32,12 +33,15 @@ app.post('/api/stripe-webhook', express.raw({type: 'application/json'}), async (
 
   console.log(`📨 Webhook received: ${event.type}`);
 
+  // Handle the event
   switch (event.type) {
     case 'checkout.session.completed':
       const session = event.data.object;
       console.log('✅ Payment completed!');
       console.log('Session ID:', session.id);
+      console.log('Customer ID:', session.customer);
       console.log('Client Reference ID (userId):', session.client_reference_id);
+      console.log('Metadata:', session.metadata);
       
       if (session.client_reference_id && session.metadata) {
         const userId = session.client_reference_id;
@@ -70,6 +74,7 @@ app.post('/api/stripe-webhook', express.raw({type: 'application/json'}), async (
           
           if (updateResult.rows.length > 0) {
             console.log(`✅ User ${userId} (${updateResult.rows[0].name}) upgraded to ${planId}`);
+            console.log('Updated user:', updateResult.rows[0]);
           } else {
             console.log(`❌ User ${userId} not found`);
           }
@@ -102,6 +107,7 @@ app.post('/api/stripe-webhook', express.raw({type: 'application/json'}), async (
       console.log(`Unhandled event type: ${event.type}`);
   }
 
+  // Return a 200 response to acknowledge receipt of the event
   res.json({ received: true });
 });
 
@@ -170,6 +176,7 @@ const initTables = async () => {
       )
     `);
     
+    // Add columns if they don't exist (for existing tables)
     try {
       await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(50) DEFAULT 'free'`);
       await query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_end_date TIMESTAMP`);
@@ -254,26 +261,16 @@ app.get("/auth/google/callback",
   }
 );
 
-// 🔥 GET CURRENT USER - FIXED: Now returns full user object
+// 🔥 GET CURRENT USER
 app.get("/api/auth/user", (req, res) => {
   if (req.user) {
-    // req.user from passport has id, name, email, google_id, avatar, bio
-    res.json({ 
-      success: true, 
-      user: {
-        id: req.user.id,
-        name: req.user.name,
-        email: req.user.email,
-        avatar: req.user.avatar,
-        bio: req.user.bio
-      }
-    });
+    res.json({ success: true, user: req.user });
   } else {
     res.json({ success: false });
   }
 });
 
-// 🔥 REGISTER API - FIXED: Uses req.login() for proper session
+// 🔥 REGISTER API
 app.post("/api/register", async (req, res) => {
   const { name, email, password } = req.body;
   try {
@@ -282,24 +279,18 @@ app.post("/api/register", async (req, res) => {
       "INSERT INTO users (name, email, password) VALUES ($1, $2, $3) RETURNING *",
       [name, email, hashed]
     );
-    
-    const user = result.rows[0];
-    
-    // Use req.login to properly create session (same as Google auth)
-    req.login(user, (err) => {
-      if (err) {
-        return res.status(500).json({ success: false, error: "Login after register failed" });
+    req.session.user = {
+      id: result.rows[0].id,
+      name: result.rows[0].name,
+      email: result.rows[0].email
+    };
+    res.json({
+      success: true,
+      user: {
+        id: result.rows[0].id,
+        name: result.rows[0].name,
+        email: result.rows[0].email
       }
-      return res.json({
-        success: true,
-        user: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-          bio: user.bio
-        }
-      });
     });
   } catch (err) {
     if (err.code === '23505') {
@@ -311,8 +302,8 @@ app.post("/api/register", async (req, res) => {
 
 // 🔥 GET CURRENT LOGGED-IN USER
 app.get("/api/user", (req, res) => {
-  if (req.user) {
-    res.json({ success: true, user: req.user });
+  if (req.session.user) {
+    res.json({ success: true, user: req.session.user });
   } else {
     res.json({ success: false });
   }
@@ -389,14 +380,12 @@ app.get("/api/user/:id/quests", async (req, res) => {
 
 // 🔥 LOGOUT
 app.get("/api/logout", (req, res) => {
-  req.logout(() => {
-    req.session.destroy(() => {
-      res.json({ success: true });
-    });
+  req.session.destroy(() => {
+    res.json({ success: true });
   });
 });
 
-// 🔐 LOGIN API - FIXED: Uses req.login() for proper session
+// 🔐 LOGIN API
 app.post("/login", async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -412,23 +401,15 @@ app.post("/login", async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ error: "Invalid password" });
     }
-    
-    // Use req.login to properly create session (same as Google auth)
-    req.login(user, (err) => {
-      if (err) {
-        return res.status(500).json({ error: "Login failed" });
-      }
-      return res.json({
-        message: "Login successful",
-        userId: user.id,
-        user: { 
-          id: user.id,
-          name: user.name, 
-          email: user.email,
-          avatar: user.avatar,
-          bio: user.bio
-        }
-      });
+    req.session.user = {
+      id: user.id,
+      name: user.name,
+      email: user.email
+    };
+    res.json({
+      message: "Login successful",
+      userId: user.id,
+      user: { name: user.name, email: user.email }
     });
   } catch (err) {
     res.status(500).json({ error: "Server error" });
@@ -437,10 +418,12 @@ app.post("/login", async (req, res) => {
 
 // ====================== STRIPE PAYMENT INTEGRATION ======================
 
+// Create checkout session
 app.post("/api/create-checkout-session", async (req, res) => {
   try {
     const { planId, userId, userEmail, planName } = req.body;
     
+    // Map planId to Price ID
     const priceIds = {
       monthly: process.env.STRIPE_MONTHLY_PRICE_ID,
       semi: process.env.STRIPE_SEMI_PRICE_ID,
@@ -480,6 +463,7 @@ app.post("/api/create-checkout-session", async (req, res) => {
   }
 });
 
+// Check user subscription status
 app.get("/api/check-subscription/:userId", async (req, res) => {
   try {
     const result = await query(
@@ -489,8 +473,8 @@ app.get("/api/check-subscription/:userId", async (req, res) => {
     
     if (result.rows.length > 0) {
       const user = result.rows[0];
-      const isActive = (user.subscription_status && user.subscription_status !== 'free') || 
-                       (user.plan_type && user.plan_type !== 'free');
+      const isActive = user.subscription_status !== 'free' && 
+                      (user.subscription_end_date === null || new Date(user.subscription_end_date) > new Date());
       
       res.json({
         isPro: isActive,
@@ -499,7 +483,7 @@ app.get("/api/check-subscription/:userId", async (req, res) => {
         expiresAt: user.subscription_end_date
       });
     } else {
-      res.json({ isPro: false, plan: 'free', planType: 'free' });
+      res.json({ isPro: false, plan: 'free' });
     }
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -510,3 +494,4 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT} 🚀`);
 });
+

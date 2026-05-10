@@ -235,47 +235,61 @@ export default function Dashboard() {
     { id: "legend", name: "LEGEND", icon: "🌟", condition: () => stats.xp >= 2000 },
   ];
 
-  // 🔥 CHECK SUBSCRIPTION STATUS ON LOAD AND ON PAGE VISIBILITY CHANGE
+  // 🔥 IMPROVED: Check subscription + load data on every mount + visibility change
   useEffect(() => {
-    const checkSubscriptionOnMount = async () => {
+    const loadUserData = async () => {
       const userId = localStorage.getItem("userId");
-      if (userId) {
-        try {
-          const res = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${userId}`, {
+      if (!userId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        // 1. Get fresh user + subscription
+        const authRes = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/user`, {
+          credentials: "include"
+        });
+        const authData = await authRes.json();
+
+        if (authData.success && authData.user) {
+          const currentUserId = authData.user.id.toString();
+          localStorage.setItem("userId", currentUserId);
+          setUser(authData.user);
+
+          // 2. Load subscription status
+          const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${currentUserId}`, {
             credentials: "include"
           });
-          const data = await res.json();
-          
-          console.log("Subscription check:", data); // Debug log
-          
-          if (data.isPro) {
-            setIsPro(true);
-            localStorage.setItem("userPlan", data.planType || "pro");
+          const subData = await subRes.json();
+          setIsPro(subData.isPro === true);
+          if (subData.isPro) {
+            localStorage.setItem("userPlan", subData.planType || "pro");
           } else {
-            setIsPro(false);
             localStorage.setItem("userPlan", "free");
           }
-        } catch (err) {
-          console.error("Error checking subscription:", err);
+
+          // 3. Load quests, stats, character data
+          await loadAllDataFromDB(currentUserId);
         }
+      } catch (err) {
+        console.error("User data load error:", err);
+      } finally {
+        setLoadingUser(false);
+        setIsLoading(false);
       }
     };
-    
-    // Check immediately on mount
-    checkSubscriptionOnMount();
-    
-    // Also check when the page becomes visible (user returns from Stripe)
+
+    loadUserData();
+
+    // Re-check when user returns from Stripe payment
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
-        checkSubscriptionOnMount();
+        loadUserData();
       }
     };
-    
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
-    };
+
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
   // 🔥 SAVE ALL DATA TO DATABASE
@@ -350,38 +364,6 @@ export default function Dashboard() {
       isProfileLoaded.current = true;
     }
   }, []);
-
-  // 🔥 FETCH USER AND LOAD SAVED DATA (only once on mount)
-   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userId = localStorage.getItem("userId");
-
-        const res = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/user`, {
-          credentials: "include"
-        });
-        const data = await res.json();
-
-        if (data.success && data.user) {
-          const currentUserId = data.user.id.toString();
-          localStorage.setItem("userId", currentUserId);
-          setUser(data.user);
-          await loadAllDataFromDB(currentUserId);
-        } else {
-          setUser(null);
-        }
-      } catch (err) {
-        console.log("User fetch error:", err);
-        setUser(null);
-      } finally {
-        setLoadingUser(false);
-        setIsLoading(false);
-      }
-    };
-
-    fetchUser();
-  }, [loadAllDataFromDB]);
-
 
   // Update edit form when user loads (but don't cause re-renders that break typing)
   useEffect(() => {
@@ -591,7 +573,6 @@ export default function Dashboard() {
       d.setDate(d.getDate() - i);
       const key = d.toISOString().split("T")[0];
       
-      // Check if ANY quest was completed on this day
       let anyCompleted = false;
       updated.forEach(q => {
         if (q.logs?.includes(key)) {
@@ -616,9 +597,8 @@ export default function Dashboard() {
     });
   }, [quests, todayStr, iconStatsMap]);
 
-   // UI CIRCLE - FIXED FOR MOBILE
+  // UI CIRCLE - FIXED FOR MOBILE
   const Circle = ({ percent, label, color }) => {
-    // Ensure percent is a valid number between 0 and 100
     const validPercent = Math.min(100, Math.max(0, percent || 0));
     const radius = 45;
     const circumference = 2 * Math.PI * radius;
@@ -737,10 +717,8 @@ export default function Dashboard() {
       </div>
 
       <div className="main">
-        {/* Conditional rendering based on active tab */}
         {activeTab === "quests" && (
           <>
-            {/* LEFT - QUESTS SECTION */}
             <div className="left">
               <div className="stats">
                 <div className="card cyan"><h4>Today</h4><h2>{stats.today}</h2></div>
@@ -750,11 +728,8 @@ export default function Dashboard() {
               </div>
 
               <div className="circles">
-                {/* Daily circle: percentage of today's completed quests */}
                 <Circle percent={quests.length > 0 ? (stats.today / quests.length) * 100 : 0} label="Daily" color="#00e5ff" />
-                {/* Weekly circle: week completion percentage */}
                 <Circle percent={stats.week} label="Weekly" color="#a855f7" />
-                {/* Overall circle: XP progress to next level */}
                 <Circle percent={xpPercent} label="Overall" color="#22c55e" />
               </div>
 
@@ -780,14 +755,12 @@ export default function Dashboard() {
                 ) : (
                   quests.map((q, i) => {
                     const completed = q.logs.includes(todayStr);
-
                     return (
                       <div key={i} className="quest-item glow-card">
                         <div className="quest-info">
                           <span className="quest-icon">{q.icon}</span>
                           <span className="quest-name">{q.name}</span>
                         </div>
-
                         <div
                           className={`complete-btn ${completed ? "done" : ""}`}
                           onClick={() => handleComplete(i)}
@@ -804,38 +777,28 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* RIGHT - CHARACTER PANEL */}
             <div className="right">
               <div className="character">
                 <h4>YOUR CHARACTER</h4>
-
                 <div className="avatar glow-avatar">
                   {userProfile.avatar || (level < 3 ? "🧙" : level < 6 ? "⚔️" : "🔥")}
                 </div>
-
                 <h3>{userProfile.displayName || user?.name || "Hero"}</h3>
                 <div className="character-class">{characterTier.class}</div>
-
                 <div className="xp-bar-container">
                   <div className="xp-fill" style={{ width: `${xpPercent}%` }}></div>
                 </div>
-
                 <p>{xpCurrent} / {xpNeeded} XP</p>
-
                 <div className="stat-bars">
                   {Object.keys(character).map(stat => (
                     <div key={stat}>
                       <span>{stat.toUpperCase()}</span>
                       <div className="bar-bg">
-                        <div
-                          className="bar-fill glow-bar"
-                          style={{ width: `${character[stat]}%` }}
-                        ></div>
+                        <div className="bar-fill glow-bar" style={{ width: `${character[stat]}%` }}></div>
                       </div>
                     </div>
                   ))}
                 </div>
-
                 <div className="user-info-section">
                   <div className="info-divider"></div>
                   <div className="info-row">
@@ -869,7 +832,6 @@ export default function Dashboard() {
         )}
         
         {activeTab === "analytics" && <Analytics />}
-        
         {activeTab === "upgrade" && <Upgrade />}
       </div>
 
