@@ -235,67 +235,87 @@ export default function Dashboard() {
     { id: "legend", name: "LEGEND", icon: "🌟", condition: () => stats.xp >= 2000 },
   ];
 
-  // 🔥 IMPROVED: Check subscription + load data on every mount + visibility change
-  useEffect(() => {
-    const loadUserData = async () => {
-      const userId = localStorage.getItem("userId");
-      if (!userId) {
-        setIsLoading(false);
-        return;
-      }
+  // 🔥 ROBUST DATA LOADER – fetches user + data from DB, with fallback
+  const loadUserData = useCallback(async () => {
+    const userId = localStorage.getItem("userId");
+    const storedUser = localStorage.getItem("user");
+    
+    // If no userId at all, just stop loading
+    if (!userId) {
+      setLoadingUser(false);
+      setIsLoading(false);
+      return;
+    }
 
+    // Use stored user immediately so name appears even if session check lags
+    if (storedUser) {
       try {
-        // 1. Get fresh user + subscription
-        const authRes = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/user`, {
+        const parsed = JSON.parse(storedUser);
+        setUser(parsed);
+      } catch (e) {}
+    }
+
+    try {
+      // 1. Verify session & get fresh user data
+      const authRes = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/user`, {
+        credentials: "include"
+      });
+      const authData = await authRes.json();
+
+      if (authData.success && authData.user) {
+        const currentUserId = authData.user.id.toString();
+        // Update localStorage with the latest
+        localStorage.setItem("userId", currentUserId);
+        localStorage.setItem("user", JSON.stringify(authData.user));
+        setUser(authData.user);
+
+        // 2. Load subscription status
+        const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${currentUserId}`, {
           credentials: "include"
         });
-        const authData = await authRes.json();
-
-        if (authData.success && authData.user) {
-          const currentUserId = authData.user.id.toString();
-          localStorage.setItem("userId", currentUserId);
-          setUser(authData.user);
-
-          // 2. Load subscription status
-          const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${currentUserId}`, {
-            credentials: "include"
-          });
-          const subData = await subRes.json();
-          setIsPro(subData.isPro === true);
-          if (subData.isPro) {
-            localStorage.setItem("userPlan", subData.planType || "pro");
-          } else {
-            localStorage.setItem("userPlan", "free");
-          }
-
-          // 3. Load quests, stats, character data
-          await loadAllDataFromDB(currentUserId);
+        const subData = await subRes.json();
+        setIsPro(subData.isPro === true);
+        if (subData.isPro) {
+          localStorage.setItem("userPlan", subData.planType || "pro");
+        } else {
+          localStorage.setItem("userPlan", "free");
         }
-      } catch (err) {
-        console.error("User data load error:", err);
-      } finally {
-        setLoadingUser(false);
-        setIsLoading(false);
-      }
-    };
 
+        // 3. Load quests/stats/character from DB
+        await loadAllDataFromDB(currentUserId);
+      } else {
+        // Session invalid – keep the stored user and still try to load data
+        console.warn("Session not found, using localStorage user");
+        if (userId) {
+          await loadAllDataFromDB(userId);
+        }
+      }
+    } catch (err) {
+      console.error("User data load error:", err);
+      // Even on error, keep the stored user visible
+    } finally {
+      setLoadingUser(false);
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Run on mount + when page becomes visible (returning from Stripe)
+  useEffect(() => {
     loadUserData();
 
-    // Re-check when user returns from Stripe payment
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         loadUserData();
       }
     };
     document.addEventListener('visibilitychange', handleVisibilityChange);
-
     return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, []);
+  }, [loadUserData]);
 
   // 🔥 SAVE ALL DATA TO DATABASE
   const saveAllDataToDB = useCallback(async (userId, questsData, statsData, characterData) => {
     try {
-    await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}/quests`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}/quests`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -307,6 +327,9 @@ export default function Dashboard() {
           character: characterData
         }),
       });
+      if (!res.ok) {
+        console.error("Save failed with status:", res.status);
+      }
     } catch (err) {
       console.error("Save to DB error:", err);
     }
@@ -315,7 +338,7 @@ export default function Dashboard() {
   // 🔥 LOAD ALL DATA FROM DATABASE
   const loadAllDataFromDB = useCallback(async (userId) => {
     try {
-    const res = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}/quests`, {
+      const res = await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}/quests`, {
         credentials: "include"
       });
       const data = await res.json();
@@ -336,7 +359,7 @@ export default function Dashboard() {
     }
   }, []);
 
-  // 🔥 Save data whenever quests, stats, or character changes (but skip first render)
+  // 🔥 Save data whenever quests, stats, or character changes (skip first render)
   useEffect(() => {
     if (isFirstRender.current) {
       isFirstRender.current = false;
@@ -365,7 +388,7 @@ export default function Dashboard() {
     }
   }, []);
 
-  // Update edit form when user loads (but don't cause re-renders that break typing)
+  // Update edit form when user loads
   useEffect(() => {
     if (user && !editForm.displayName && !userProfile.displayName) {
       setEditForm(prev => ({
@@ -386,10 +409,9 @@ export default function Dashboard() {
     setUserProfile(updatedProfile);
     localStorage.setItem("userProfile", JSON.stringify(updatedProfile));
     
-    // Save to database
     if (userId) {
       try {
-       await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}`, {
+        await fetch(`${process.env.REACT_APP_API_URL}/api/user/${userId}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -412,40 +434,38 @@ export default function Dashboard() {
 
   // Handle input changes without focus loss - using useCallback
   const handleDisplayNameChange = useCallback((e) => {
-    const newValue = e.target.value;
-    setEditForm(prev => ({ ...prev, displayName: newValue }));
+    setEditForm(prev => ({ ...prev, displayName: e.target.value }));
   }, []);
 
   const handleBioChange = useCallback((e) => {
-    const newValue = e.target.value;
-    setEditForm(prev => ({ ...prev, bio: newValue }));
+    setEditForm(prev => ({ ...prev, bio: e.target.value }));
   }, []);
 
   const handleAvatarChange = useCallback((avatar) => {
-    setEditForm(prev => ({ ...prev, avatar: avatar }));
+    setEditForm(prev => ({ ...prev, avatar }));
   }, []);
 
-  // 🔥 LOGOUT FUNCTION
+  // 🔥 LOGOUT – always save before clearing
   const handleLogout = useCallback(async () => {
     try {
-      // Save data before logout
       const userId = localStorage.getItem("userId");
       if (userId) {
+        // Force save current state
         await saveAllDataToDB(userId, quests, stats, character);
       }
-      
+    } catch (e) {
+      console.error("Pre‑logout save error:", e);
+    }
+    try {
       await fetch(`${process.env.REACT_APP_API_URL}/api/logout`, {
         method: "GET",
         credentials: "include",
       });
-      localStorage.removeItem("userId");
-      localStorage.removeItem("user");
-      localStorage.removeItem("userProfile");
-      navigate("/login");
-    } catch (err) {
-      console.error("Logout error:", err);
-      navigate("/login");
-    }
+    } catch (e) {}
+    localStorage.removeItem("userId");
+    localStorage.removeItem("user");
+    localStorage.removeItem("userProfile");
+    navigate("/login");
   }, [quests, stats, character, saveAllDataToDB, navigate]);
 
   // Toggle menu for mobile
@@ -470,7 +490,6 @@ export default function Dashboard() {
   const xpNeeded = 100;
   const xpPercent = (xpCurrent / xpNeeded) * 100;
 
-  // Character evolution tier based on level
   const getCharacterTier = useCallback(() => {
     if (level < 3) return { name: "NOVICE", class: "NOVICE", icon: "🧙" };
     if (level < 6) return { name: "APPRENTICE", class: "APPRENTICE", icon: "⚔️" };
@@ -482,20 +501,14 @@ export default function Dashboard() {
   const characterTier = getCharacterTier();
   const evolutionProgress = Math.min(100, (stats.xp % 500) / 5);
 
-  // GRAPH
   const generateActivity = useCallback(() => {
     return Array.from({ length: 30 }, (_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (29 - i));
       const key = d.toISOString().split("T")[0];
-
       const completed = quests.filter(q => q.logs?.includes(key)).length;
       const total = quests.length || 1;
-
-      return {
-        day: i,
-        value: Math.floor((completed / total) * 100),
-      };
+      return { day: i, value: Math.floor((completed / total) * 100) };
     });
   }, [quests]);
 
@@ -509,135 +522,70 @@ export default function Dashboard() {
   const handleComplete = useCallback((index) => {
     const updated = [...quests];
     const quest = updated[index];
-
     const alreadyDone = quest.logs.includes(todayStr);
-
     if (alreadyDone) {
       quest.logs = quest.logs.filter(d => d !== todayStr);
     } else {
       quest.logs.push(todayStr);
     }
-
     setQuests(updated);
 
     const total = updated.length || 1;
+    const completedToday = updated.filter(q => q.logs.includes(todayStr)).length;
 
-    const completedToday = updated.filter(q =>
-      q.logs.includes(todayStr)
-    ).length;
-
-    // WEEK
     const weekDates = [...Array(7)].map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - i);
       return d.toISOString().split("T")[0];
     });
-
     let weekCompleted = 0;
     updated.forEach(q => {
-      weekDates.forEach(d => {
-        if (q.logs.includes(d)) weekCompleted++;
-      });
+      weekDates.forEach(d => { if (q.logs.includes(d)) weekCompleted++; });
     });
+    const weekPercent = Math.min(Math.floor((weekCompleted / (total * 7)) * 100), 100);
 
-    const weekPercent = Math.min(
-      Math.floor((weekCompleted / (total * 7)) * 100),
-      100
-    );
-
-    // XP (10 XP per completed day)
     let totalXP = 0;
-    updated.forEach(q => {
-      totalXP += q.logs.length * 10;
-    });
+    updated.forEach(q => { totalXP += q.logs.length * 10; });
 
-    // CHARACTER
-    let newCharacter = {
-      strength: 0,
-      wisdom: 0,
-      endurance: 0,
-      focus: 0,
-    };
-
+    let newCharacter = { strength: 0, wisdom: 0, endurance: 0, focus: 0 };
     updated.forEach(q => {
       const statType = iconStatsMap[q.icon] || "focus";
-      q.logs.forEach(() => {
-        newCharacter[statType] = Math.min(100, newCharacter[statType] + 2);
-      });
+      q.logs.forEach(() => { newCharacter[statType] = Math.min(100, newCharacter[statType] + 2); });
     });
 
-    // 🔥 FIXED STREAK CALCULATION - Count days where at least ONE quest was completed
     let streak = 0;
     for (let i = 0; i < 30; i++) {
       const d = new Date();
       d.setDate(d.getDate() - i);
       const key = d.toISOString().split("T")[0];
-      
       let anyCompleted = false;
-      updated.forEach(q => {
-        if (q.logs?.includes(key)) {
-          anyCompleted = true;
-        }
-      });
-      
-      if (anyCompleted) {
-        streak++;
-      } else {
-        break;
-      }
+      updated.forEach(q => { if (q.logs?.includes(key)) anyCompleted = true; });
+      if (anyCompleted) streak++;
+      else break;
     }
 
     setCharacter(newCharacter);
-
-    setStats({
-      today: completedToday,
-      xp: totalXP,
-      week: weekPercent,
-      streak: streak,
-    });
+    setStats({ today: completedToday, xp: totalXP, week: weekPercent, streak });
   }, [quests, todayStr, iconStatsMap]);
 
-  // UI CIRCLE - FIXED FOR MOBILE
   const Circle = ({ percent, label, color }) => {
     const validPercent = Math.min(100, Math.max(0, percent || 0));
     const radius = 45;
     const circumference = 2 * Math.PI * radius;
     const offset = circumference - (validPercent / 100) * circumference;
-
     return (
       <div className="circle-box glow">
         <svg height="120" width="120" viewBox="0 0 120 120">
-          <circle 
-            cx="60" 
-            cy="60" 
-            r={radius} 
-            stroke="#1a2035" 
-            strokeWidth="6" 
-            fill="transparent"
-          />
-          <circle
-            cx="60"
-            cy="60"
-            r={radius}
-            stroke={color}
-            strokeWidth="6"
-            fill="transparent"
-            strokeDasharray={circumference}
-            strokeDashoffset={offset}
-            strokeLinecap="round"
-            className="circle-anim"
-            transform="rotate(-90 60 60)"
-          />
+          <circle cx="60" cy="60" r={radius} stroke="#1a2035" strokeWidth="6" fill="transparent" />
+          <circle cx="60" cy="60" r={radius} stroke={color} strokeWidth="6" fill="transparent"
+            strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round"
+            className="circle-anim" transform="rotate(-90 60 60)" />
         </svg>
-        <div className="circle-text">
-          {validPercent}%
-          <span>{label}</span>
-        </div>
+        <div className="circle-text">{validPercent}%<span>{label}</span></div>
       </div>
     );
   };
   
-  // Active days calculation
   const activeDays = Object.keys(quests.reduce((acc, q) => {
     q.logs?.forEach(log => acc[log] = true);
     return acc;
@@ -654,54 +602,26 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard">
-
-      {/* 🔥 NAVBAR WITH HAMBURGER MENU */}
       <div className="topbar">
         <div className="logo">HABIT<span>RACER</span></div>
-
-        <button className="menu-toggle" onClick={toggleMenu}>
-          ☰
-        </button>
-
+        <button className="menu-toggle" onClick={toggleMenu}>☰</button>
         <div className={`nav-tabs ${menuOpen ? "open" : ""}`}>
-          <button 
-            className={`nav-tab ${activeTab === "quests" ? "active" : ""}`}
-            onClick={() => { setActiveTab("quests"); setMenuOpen(false); }}
-          >
-            ⚔️ QUESTS
-          </button>
-          <button 
-            className={`nav-tab ${activeTab === "analytics" ? "active" : ""}`}
-            onClick={() => { setActiveTab("analytics"); setMenuOpen(false); }}
-          >
-            📊 ANALYTICS
-          </button>
-          <button 
-            className={`nav-tab ${activeTab === "profile" ? "active" : ""}`}
-            onClick={() => { setActiveTab("profile"); setMenuOpen(false); }}
-          >
-            👤 PROFILE
-          </button>
-          <button 
-            className={`nav-tab ${activeTab === "upgrade" ? "active" : ""}`}
-            onClick={() => { setActiveTab("upgrade"); setMenuOpen(false); }}
-          >
-            ⚡ UPGRADE
-          </button>
+          <button className={`nav-tab ${activeTab === "quests" ? "active" : ""}`}
+            onClick={() => { setActiveTab("quests"); setMenuOpen(false); }}>⚔️ QUESTS</button>
+          <button className={`nav-tab ${activeTab === "analytics" ? "active" : ""}`}
+            onClick={() => { setActiveTab("analytics"); setMenuOpen(false); }}>📊 ANALYTICS</button>
+          <button className={`nav-tab ${activeTab === "profile" ? "active" : ""}`}
+            onClick={() => { setActiveTab("profile"); setMenuOpen(false); }}>👤 PROFILE</button>
+          <button className={`nav-tab ${activeTab === "upgrade" ? "active" : ""}`}
+            onClick={() => { setActiveTab("upgrade"); setMenuOpen(false); }}>⚡ UPGRADE</button>
         </div>
-
         <div className="hdr-r">
           <div className="xp-wrap">
             <span className="xp-lbl">XP</span>
-            <div className="xp-track">
-              <div className="xp-fill-bar" style={{ width: `${xpPercent}%` }}></div>
-            </div>
+            <div className="xp-track"><div className="xp-fill-bar" style={{ width: `${xpPercent}%` }}></div></div>
           </div>
           <div className="lvl-badge">LVL {level}</div>
-          <div className={`plan-pill ${isPro ? "pro" : "free"}`}>
-            {isPro ? "PRO ⚡" : "FREE"}
-          </div>
-          
+          <div className={`plan-pill ${isPro ? "pro" : "free"}`}>{isPro ? "PRO ⚡" : "FREE"}</div>
           {loadingUser ? (
             <div className="av-hdr pulse-avatar">⚡</div>
           ) : user ? (
@@ -711,7 +631,6 @@ export default function Dashboard() {
           ) : (
             <div className="av-hdr" onClick={() => { setActiveTab("profile"); setMenuOpen(false); }}>👤</div>
           )}
-          
           <button className="btn-logout" onClick={handleLogout}>LOGOUT</button>
         </div>
       </div>
@@ -726,13 +645,11 @@ export default function Dashboard() {
                 <div className="card purple"><h4>XP</h4><h2>{stats.xp}</h2></div>
                 <div className="card green"><h4>Week</h4><h2>{stats.week}%</h2></div>
               </div>
-
               <div className="circles">
                 <Circle percent={quests.length > 0 ? (stats.today / quests.length) * 100 : 0} label="Daily" color="#00e5ff" />
                 <Circle percent={stats.week} label="Weekly" color="#a855f7" />
                 <Circle percent={xpPercent} label="Overall" color="#22c55e" />
               </div>
-
               <div className="activity">
                 <ResponsiveContainer width="100%" height={120}>
                   <LineChart data={activityData}>
@@ -740,12 +657,10 @@ export default function Dashboard() {
                   </LineChart>
                 </ResponsiveContainer>
               </div>
-
               <div className="quests">
                 <button onClick={() => setShowModal(true)}>
                   + New Quest ({quests.length}/{isPro ? "∞" : "3"})
                 </button>
-
                 {quests.length === 0 ? (
                   <div className="empty">
                     <div className="empty-ico">🗺️</div>
@@ -761,10 +676,8 @@ export default function Dashboard() {
                           <span className="quest-icon">{q.icon}</span>
                           <span className="quest-name">{q.name}</span>
                         </div>
-                        <div
-                          className={`complete-btn ${completed ? "done" : ""}`}
-                          onClick={() => handleComplete(i)}
-                        >
+                        <div className={`complete-btn ${completed ? "done" : ""}`}
+                          onClick={() => handleComplete(i)}>
                           <div className="circle">
                             <div className="circle-fill"></div>
                             {completed && <span className="tick">✔</span>}
@@ -776,7 +689,6 @@ export default function Dashboard() {
                 )}
               </div>
             </div>
-
             <div className="right">
               <div className="character">
                 <h4>YOUR CHARACTER</h4>
@@ -830,7 +742,6 @@ export default function Dashboard() {
             achievements={achievements}
           />
         )}
-        
         {activeTab === "analytics" && <Analytics />}
         {activeTab === "upgrade" && <Upgrade />}
       </div>
