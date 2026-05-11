@@ -236,81 +236,90 @@ export default function Dashboard() {
   ];
 
   // 🔥 ROBUST DATA LOADER – fetches user + data from DB, with fallback
-  const loadUserData = useCallback(async () => {
-    const userId = localStorage.getItem("userId");
-    const storedUser = localStorage.getItem("user");
-    
-    // If no userId at all, just stop loading
-    if (!userId) {
-      setLoadingUser(false);
-      setIsLoading(false);
-      return;
-    }
+ // Replace the existing loadUserData and the useEffect that calls it with this:
 
-    // Use stored user immediately so name appears even if session check lags
-    if (storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser);
-        setUser(parsed);
-      } catch (e) {}
-    }
+// 🔥 ROBUST DATA LOADER – immediate user + plan from localStorage, then server check
+const loadUserData = useCallback(async () => {
+  const userId = localStorage.getItem("userId");
+  const storedUser = localStorage.getItem("user");
+  const storedPlan = localStorage.getItem("userPlan");   // ← read plan early
 
+  if (!userId) {
+    setLoadingUser(false);
+    setIsLoading(false);
+    return;
+  }
+
+  // Show stored user & plan immediately so navbar is never wrong
+  if (storedUser) {
     try {
-      // 1. Verify session & get fresh user data
-      const authRes = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/user`, {
+      const parsed = JSON.parse(storedUser);
+      setUser(parsed);
+    } catch (e) {}
+  }
+  if (storedPlan) {
+    setIsPro(storedPlan !== "free");               // ← set isPro NOW
+  }
+
+  try {
+    // 1. Verify session & get fresh user data
+    const authRes = await fetch(`${process.env.REACT_APP_API_URL}/api/auth/user`, {
+      credentials: "include"
+    });
+    const authData = await authRes.json();
+
+    if (authData.success && authData.user) {
+      const currentUserId = authData.user.id.toString();
+      localStorage.setItem("userId", currentUserId);
+      localStorage.setItem("user", JSON.stringify(authData.user));
+      setUser(authData.user);
+
+      // 2. Load subscription status
+      const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${currentUserId}`, {
         credentials: "include"
       });
-      const authData = await authRes.json();
+      const subData = await subRes.json();
+      setIsPro(subData.isPro === true);
+      localStorage.setItem("userPlan", subData.isPro ? subData.planType || "pro" : "free");
 
-      if (authData.success && authData.user) {
-        const currentUserId = authData.user.id.toString();
-        // Update localStorage with the latest
-        localStorage.setItem("userId", currentUserId);
-        localStorage.setItem("user", JSON.stringify(authData.user));
-        setUser(authData.user);
-
-        // 2. Load subscription status
-        const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${currentUserId}`, {
-          credentials: "include"
-        });
-        const subData = await subRes.json();
-        setIsPro(subData.isPro === true);
-        if (subData.isPro) {
-          localStorage.setItem("userPlan", subData.planType || "pro");
-        } else {
-          localStorage.setItem("userPlan", "free");
-        }
-
-        // 3. Load quests/stats/character from DB
-        await loadAllDataFromDB(currentUserId);
-      } else {
-        // Session invalid – keep the stored user and still try to load data
-        console.warn("Session not found, using localStorage user");
-        if (userId) {
-          await loadAllDataFromDB(userId);
-        }
+      // 3. Load quests/stats/character from DB
+      await loadAllDataFromDB(currentUserId);
+    } else {
+      // Session invalid – still try to load data with stored userId
+      console.warn("Session not found, using localStorage user");
+      if (userId) {
+        // Also check subscription even if session fails
+        try {
+          const subRes = await fetch(`${process.env.REACT_APP_API_URL}/api/check-subscription/${userId}`, {
+            credentials: "include"
+          });
+          const subData = await subRes.json();
+          setIsPro(subData.isPro === true);
+          localStorage.setItem("userPlan", subData.isPro ? subData.planType || "pro" : "free");
+        } catch (e) {}
+        await loadAllDataFromDB(userId);
       }
-    } catch (err) {
-      console.error("User data load error:", err);
-      // Even on error, keep the stored user visible
-    } finally {
-      setLoadingUser(false);
-      setIsLoading(false);
     }
-  }, []);
+  } catch (err) {
+    console.error("User data load error:", err);
+  } finally {
+    setLoadingUser(false);
+    setIsLoading(false);
+  }
+}, []);
 
-  // Run on mount + when page becomes visible (returning from Stripe)
-  useEffect(() => {
-    loadUserData();
+// Run on mount + when page becomes visible (returning from Stripe)
+useEffect(() => {
+  loadUserData();
 
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        loadUserData();
-      }
-    };
-    document.addEventListener('visibilitychange', handleVisibilityChange);
-    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
-  }, [loadUserData]);
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === 'visible') {
+      loadUserData();
+    }
+  };
+  document.addEventListener('visibilitychange', handleVisibilityChange);
+  return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+}, [loadUserData]);
 
   // 🔥 SAVE ALL DATA TO DATABASE
   const saveAllDataToDB = useCallback(async (userId, questsData, statsData, characterData) => {
@@ -465,6 +474,7 @@ export default function Dashboard() {
     localStorage.removeItem("userId");
     localStorage.removeItem("user");
     localStorage.removeItem("userProfile");
+    localStorage.removeItem("userPlan");
     navigate("/login");
   }, [quests, stats, character, saveAllDataToDB, navigate]);
 
