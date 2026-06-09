@@ -16,7 +16,8 @@ export default function Footer() {
             Build streaks, evolve your character, and level up your life — one habit at a time.
           </p>
           <div className="footer-social">
-            <a href="#" className="social-icon" aria-label="Twitter">𝕏</a>
+            <div className="footer-social">
+  <a href="https://x.com/taskKing81" className="social-icon" aria-label="Twitter" target="_blank" rel="noopener noreferrer">𝕏</a>
             <a href="#" className="social-icon" aria-label="Discord">🎮</a>
             <a href="#" className="social-icon" aria-label="GitHub">⌨️</a>
             <a href="#" className="social-icon" aria-label="Instagram">📸</a>
